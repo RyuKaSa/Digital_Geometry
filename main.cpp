@@ -20,8 +20,7 @@ Curve getBoundary(T & object)
     //Khalimsky space
     KSpace kSpace;
     // we need to add a margine to prevent situations such that an object touch the bourder of the domain
-    kSpace.init( object.domain().lowerBound() - Point(1,1),
-                   object.domain().upperBound() + Point(1,1), true );
+    kSpace.init( object.domain().lowerBound() - Point(1,1), object.domain().upperBound() + Point(1,1), true );
 
     // 1) Call Surfaces::findABel() to find a cell which belongs to the border
     std::vector<Z2i::Point> boundaryPoints; // boundary points are going to be stored here
@@ -46,8 +45,11 @@ int main(int argc, char** argv)
     typedef Object<DT4_8, DigitalSet> ObjectType; // Digital object type
 
 
-    // read an image
-    Image image = PGMReader<Image>::importPGM ("resources/Rice_japonais_seg_bin.pgm");
+    // read an image, from root directory, the path is :
+    // resources/Rice_basmati_seg_bin.pgm
+    // resources/Rice_camargue_seg_bin.pgm
+    // resources/Rice_japonais_seg_bin.pgm
+    Image image = PGMReader<Image>::importPGM ("resources/Rice_basmati_seg_bin.pgm");
 
     // 1) make a "digital set" of proper size
     // 2) populate a digital set from the image using SetFromImage::append()
