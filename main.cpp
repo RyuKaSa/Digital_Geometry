@@ -49,12 +49,17 @@ int main(int argc, char** argv)
     // resources/Rice_basmati_seg_bin.pgm
     // resources/Rice_camargue_seg_bin.pgm
     // resources/Rice_japonais_seg_bin.pgm
-    Image image = PGMReader<Image>::importPGM ("resources/Rice_basmati_seg_bin.pgm");
+    Image image1 = PGMReader<Image>::importPGM ("resources/Rice_basmati_seg_bin.pgm");
 
     // 1) make a "digital set" of proper size
-    // 2) populate a digital set from the image using SetFromImage::append()
+    DigitalSet aSet( image1.domain() ); // a digital set is created with the same domain as the image
 
-    // 3) Create a digital object from the digital set
+    // 2) populate a digital set from the image using SetFromImage::append()
+    SetFromImage<DigitalSet>::append( aSet, image1, 0, 255 ); // 0 is the background, 255 is the object
+
+    // 3) Create a digital object from the digital set, use (4, 8)
+    // 4 adjacency for the object, and 8 adjacency for the background, the images where made with those settings
+
     std::vector< ObjectType > objects;          // All connected components are going to be stored in it
     std::back_insert_iterator< std::vector< ObjectType > > inserter( objects ); // Iterator used to populated "objects".
 
