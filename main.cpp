@@ -10,9 +10,16 @@
 #include <DGtal/topology/helpers/Surfaces.h>
 #include "DGtal/io/Color.h"
 
+#include <iostream>
+#include <vector>
+#include <filesystem>
+#include <string>
+
 using namespace std;
 using namespace DGtal;
 using namespace Z2i;
+
+namespace fs = std::filesystem;
 
 template<class T>
 Curve getBoundary(T & object)
@@ -30,50 +37,95 @@ Curve getBoundary(T & object)
     return boundaryCurve;
 }
 
-template<class T>
-void sendToBoard( Board2D & board, T & p_Object, DGtal::Color p_Color) {
-    board << CustomStyle( p_Object.className(), new DGtal::CustomFillColor(p_Color));
-    board << p_Object;
-}
+// template<class T>
+// void sendToBoard( Board2D & board, T & p_Object, DGtal::Color p_Color) {
+//     board << CustomStyle( p_Object.className(), new DGtal::CustomFillColor(p_Color));
+//     board << p_Object;
+// }
 
 int main(int argc, char** argv)
 {
-    setlocale(LC_NUMERIC, "us_US"); //To prevent French local settings
-    typedef ImageSelector<Domain, unsigned char >::Type Image; // type of image
+    setlocale(LC_NUMERIC, "us_US"); // To prevent French local settings
+    typedef ImageSelector<Domain, unsigned char >::Type Image; // Type of image
     typedef DigitalSetSelector< Domain, BIG_DS+HIGH_BEL_DS >::Type DigitalSet; // Digital set type
-    //typedef Object<DT8_4, DigitalSet> ObjectType; // Digital object type
     typedef Object<DT4_8, DigitalSet> ObjectType; // Digital object type
 
+    std::vector<std::string> fileNames;
+    std::string directoryPath = "resources/";
 
-    // read an image, from root directory, the path is :
-    // resources/Rice_basmati_seg_bin.pgm
-    // resources/Rice_camargue_seg_bin.pgm
-    // resources/Rice_japonais_seg_bin.pgm
-    Image image1 = PGMReader<Image>::importPGM ("resources/Rice_japonais_seg_bin.pgm");
+    // Iterate over all files in the directory for pgm specifically
+    for (const auto& entry : fs::directory_iterator(directoryPath)) {
+        if (entry.is_regular_file()) {
+            std::string filePath = entry.path().string();
+            if (filePath.size() >= 12 && filePath.substr(filePath.size() - 12) == "_seg_bin.pgm") {
+                fileNames.push_back(filePath);
+            }
+        }
+    }
 
-    // 1) make a "digital set" of proper size
-    DigitalSet aSet( image1.domain() ); // a digital set is created with the same domain as the image
+    std::cout << "Number of files found: " << fileNames.size() << std::endl;
+    std::cout << "=============================" << std::endl;
 
-    // 2) populate a digital set from the image using SetFromImage::append()
-    SetFromImage<DigitalSet>::append( aSet, image1, 1, 255 ); // 1 is the background, 255 is the object
+    for (const auto& fileName : fileNames)
+    {
+        std::cout << "Processing file: " << fileName << std::endl;
 
-    // 3) Create a digital object from the digital set, use (4, 8)
-    // 4 adjacency for the object, and 8 adjacency for the background, the images where made with those settings
+        // Read the image from the current filename
+        Image image1 = PGMReader<Image>::importPGM(fileName);
 
-    std::vector< ObjectType > objects;          // All connected components are going to be stored in it
-    std::back_insert_iterator< std::vector< ObjectType > > inserter( objects ); // Iterator used to populated "objects".
+        // 1) Create a "digital set" of the same size as the image
+        DigitalSet aSet(image1.domain()); // A digital set is created with the same domain as the image
 
-    ObjectType diamond( dt4_8, aSet);
+        // 2) Populate the digital set from the image
+        SetFromImage<DigitalSet>::append(aSet, image1, 1, 255); // 1 is the background, 255 is the object
 
-    unsigned int nbc = diamond.writeComponents( inserter );
+        // 3) Create a digital object from the digital set with (4, 8) adjacency
+        std::vector<ObjectType> objects; // Store all connected components here
+        std::back_insert_iterator<std::vector<ObjectType>> inserter(objects); // Iterator to populate "objects"
+        ObjectType diamond(dt4_8, aSet);
+        unsigned int nbc = diamond.writeComponents(inserter);
 
-    // 4) Set the adjacency pair and obtain the connected components using "writeComponents"
-    std::cout << " number of components : " << objects.size() << endl; // Right now size of "objects" is the number of conected components
+        std::cout << "Initial number of connected components: " << objects.size() << std::endl;
 
-    // This is an example how to create a pdf file for each object
-    Board2D aBoard;                                 // use "Board2D" to save output
-    //sendToBoard(aBoard, objects[0], Color::Red);   // send the connected component "objects[0]" to "aBoard"
-    //aBoard.saveCairo("out.pdf",Board2D::CairoPDF); // do not forget to change the path!
+        // Variables to track components
+        int boundaryComponents = 0;
+        std::vector<ObjectType> finalComponents;
+
+        // Define image bounds for edge checking
+        Point lowerBound = image1.domain().lowerBound();
+        Point upperBound = image1.domain().upperBound();
+
+        // 4) Boundary check for each component
+        for (const auto& component : objects)
+        {
+            bool isBoundary = false;
+            for (const auto& point : component.pointSet())
+            {
+                if (point[0] == lowerBound[0] || point[0] == upperBound[0] || 
+                    point[1] == lowerBound[1] || point[1] == upperBound[1])
+                {
+                    isBoundary = true;
+                    break;
+                }
+            }
+
+            // If not on boundary, add to final list; otherwise, count it as removed
+            if (isBoundary)
+            {
+                boundaryComponents++;
+            }
+            else
+            {
+                finalComponents.push_back(component);
+            }
+        }
+
+        // 5) Display the final results for the current file
+        // std::cout << "File name: " << fileName << std::endl;
+        std::cout << "Number of components removed: " << boundaryComponents << std::endl;
+        std::cout << "Final number of connected components: " << finalComponents.size() << std::endl;
+        std::cout << "=============================" << std::endl;
+    }
 
     return 0;
 }
