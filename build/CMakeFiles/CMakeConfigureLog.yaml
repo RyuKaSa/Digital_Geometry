@@ -566,3 +566,81 @@ events:
         
       exitCode: 2
 ...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/local/lib/python3.9/dist-packages/cmake/data/share/cmake-3.26/Modules/FindHDF5.cmake:238 (try_compile)"
+      - "/usr/local/lib/python3.9/dist-packages/cmake/data/share/cmake-3.26/Modules/FindHDF5.cmake:584 (_HDF5_test_regular_compiler_C)"
+      - "/usr/local/lib/python3.9/dist-packages/cmake/data/share/cmake-3.26/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)"
+      - "/usr/local/lib/DGtal/DGtalConfig.cmake:53 (find_dependency)"
+      - "CMakeLists.txt:7 (FIND_PACKAGE)"
+    directories:
+      source: "/home/2ing2/william.bogdanovic/T\u00e9l\u00e9chargements/RiceGrains/build/CMakeFiles/CMakeScratch/TryCompile-Fu4hYH"
+      binary: "/home/2ing2/william.bogdanovic/T\u00e9l\u00e9chargements/RiceGrains/build/CMakeFiles/CMakeScratch/TryCompile-Fu4hYH"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/home/2ing2/william.bogdanovic/T\u00e9l\u00e9chargements/RiceGrains/build/CPM_modules;/usr/local/lib/DGtal/Modules"
+    buildResult:
+      variable: "HDF5_C_COMPILER_NO_INTERROGATE"
+      cached: true
+      stdout: |
+        Change Dir: /home/2ing2/william.bogdanovic/Téléchargements/RiceGrains/build/CMakeFiles/CMakeScratch/TryCompile-Fu4hYH
+        
+        Run Build Command(s):/usr/local/lib/python3.9/dist-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_44c1e/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_44c1e.dir/build.make CMakeFiles/cmTC_44c1e.dir/build
+        gmake[1] : on entre dans le répertoire « /home/2ing2/william.bogdanovic/Téléchargements/RiceGrains/build/CMakeFiles/CMakeScratch/TryCompile-Fu4hYH »
+        Building C object CMakeFiles/cmTC_44c1e.dir/cmake_hdf5_test.c.o
+        /usr/bin/cc    -o CMakeFiles/cmTC_44c1e.dir/cmake_hdf5_test.c.o -c /home/2ing2/william.bogdanovic/Téléchargements/RiceGrains/build/CMakeFiles/hdf5/cmake_hdf5_test.c
+        /home/2ing2/william.bogdanovic/Téléchargements/RiceGrains/build/CMakeFiles/hdf5/cmake_hdf5_test.c:1:10: fatal error: hdf5.h: Aucun fichier ou dossier de ce type
+            1 | #include <hdf5.h>
+              |          ^~~~~~~~
+        compilation terminated.
+        gmake[1]: *** [CMakeFiles/cmTC_44c1e.dir/build.make:78 : CMakeFiles/cmTC_44c1e.dir/cmake_hdf5_test.c.o] Erreur 1
+        gmake[1] : on quitte le répertoire « /home/2ing2/william.bogdanovic/Téléchargements/RiceGrains/build/CMakeFiles/CMakeScratch/TryCompile-Fu4hYH »
+        gmake: *** [Makefile:127 : cmTC_44c1e/fast] Erreur 2
+        
+      exitCode: 2
+...
+
+---
+events:
+  -
+    kind: "try_compile-v1"
+    backtrace:
+      - "/usr/local/lib/python3.9/dist-packages/cmake/data/share/cmake-3.26/Modules/FindHDF5.cmake:238 (try_compile)"
+      - "/usr/local/lib/python3.9/dist-packages/cmake/data/share/cmake-3.26/Modules/FindHDF5.cmake:584 (_HDF5_test_regular_compiler_C)"
+      - "/usr/local/lib/python3.9/dist-packages/cmake/data/share/cmake-3.26/Modules/CMakeFindDependencyMacro.cmake:76 (find_package)"
+      - "/usr/local/lib/DGtal/DGtalConfig.cmake:53 (find_dependency)"
+      - "CMakeLists.txt:7 (FIND_PACKAGE)"
+    directories:
+      source: "/home/2ing2/william.bogdanovic/T\u00e9l\u00e9chargements/RiceGrains/build/CMakeFiles/CMakeScratch/TryCompile-8Et8a2"
+      binary: "/home/2ing2/william.bogdanovic/T\u00e9l\u00e9chargements/RiceGrains/build/CMakeFiles/CMakeScratch/TryCompile-8Et8a2"
+    cmakeVariables:
+      CMAKE_C_FLAGS: ""
+      CMAKE_C_FLAGS_DEBUG: "-g"
+      CMAKE_EXE_LINKER_FLAGS: ""
+      CMAKE_MODULE_PATH: "/home/2ing2/william.bogdanovic/T\u00e9l\u00e9chargements/RiceGrains/build/CPM_modules;/usr/local/lib/DGtal/Modules"
+    buildResult:
+      variable: "HDF5_C_COMPILER_NO_INTERROGATE"
+      cached: true
+      stdout: |
+        Change Dir: /home/2ing2/william.bogdanovic/Téléchargements/RiceGrains/build/CMakeFiles/CMakeScratch/TryCompile-8Et8a2
+        
+        Run Build Command(s):/usr/local/lib/python3.9/dist-packages/cmake/data/bin/cmake -E env VERBOSE=1 /usr/bin/gmake -f Makefile cmTC_99cc8/fast && /usr/bin/gmake  -f CMakeFiles/cmTC_99cc8.dir/build.make CMakeFiles/cmTC_99cc8.dir/build
+        gmake[1] : on entre dans le répertoire « /home/2ing2/william.bogdanovic/Téléchargements/RiceGrains/build/CMakeFiles/CMakeScratch/TryCompile-8Et8a2 »
+        Building C object CMakeFiles/cmTC_99cc8.dir/cmake_hdf5_test.c.o
+        /usr/bin/cc    -o CMakeFiles/cmTC_99cc8.dir/cmake_hdf5_test.c.o -c /home/2ing2/william.bogdanovic/Téléchargements/RiceGrains/build/CMakeFiles/hdf5/cmake_hdf5_test.c
+        /home/2ing2/william.bogdanovic/Téléchargements/RiceGrains/build/CMakeFiles/hdf5/cmake_hdf5_test.c:1:10: fatal error: hdf5.h: Aucun fichier ou dossier de ce type
+            1 | #include <hdf5.h>
+              |          ^~~~~~~~
+        compilation terminated.
+        gmake[1]: *** [CMakeFiles/cmTC_99cc8.dir/build.make:78 : CMakeFiles/cmTC_99cc8.dir/cmake_hdf5_test.c.o] Erreur 1
+        gmake[1] : on quitte le répertoire « /home/2ing2/william.bogdanovic/Téléchargements/RiceGrains/build/CMakeFiles/CMakeScratch/TryCompile-8Et8a2 »
+        gmake: *** [Makefile:127 : cmTC_99cc8/fast] Erreur 2
+        
+      exitCode: 2
+...

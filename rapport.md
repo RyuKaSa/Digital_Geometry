@@ -8,4 +8,14 @@
  - (B) Camargue rice (Original: Rice_camargue.pgm; Segmented: Rice_camargue_seg_bin.pgm),
  - (C) Japanese rice (Original: Rice_japanese.pgm; Segmented: Rice_japanese_seg_bin.pgm)
 
-The rice (A) is Basmati rice, the general shape of the rice grain
+The rice (A) is Basmati rice, the general shape of the rice grain is that of a long slender cylinder, of ratio 1/5 width to height, in average.
+
+The rice (B) is Camargue rice, the general shape of the rice grain is that of a short cylinder, of ratio 1/3 width to height, in average.
+
+The rice (C) is Japanese rice, the general shape of the rice grain is that of an oval, of ratio 1/2 width to height, in average. This rice seems to be thicker in width as well, relative to the other rices.
+
+ ** We will now treat the .pgm images, whose pixel values are either 0 or 255, for when the pixel is that of a grain of rice or not. **
+
+# STEP 2 : COUNT GRAINS
+
+1. 

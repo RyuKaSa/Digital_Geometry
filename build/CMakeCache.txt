@@ -205,7 +205,7 @@ CMAKE_PROJECT_DESCRIPTION:STATIC=
 CMAKE_PROJECT_HOMEPAGE_URL:STATIC=
 
 //Value Computed by CMake
-CMAKE_PROJECT_NAME:STATIC=Helloworld
+CMAKE_PROJECT_NAME:STATIC=RiceCounter
 
 //Path to a program.
 CMAKE_RANLIB:FILEPATH=/usr/bin/ranlib
@@ -403,6 +403,15 @@ Qt5Xml_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5Xml
 
 //The directory containing a CMake configuration file for Qt5.
 Qt5_DIR:PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5
+
+//Value Computed by CMake
+RiceCounter_BINARY_DIR:STATIC=/home/2ing2/william.bogdanovic/Téléchargements/RiceGrains/build
+
+//Value Computed by CMake
+RiceCounter_IS_TOP_LEVEL:STATIC=ON
+
+//Value Computed by CMake
+RiceCounter_SOURCE_DIR:STATIC=/home/2ing2/william.bogdanovic/Téléchargements/RiceGrains
 
 //Path to a file.
 ZLIB_INCLUDE_DIR:PATH=/usr/include
