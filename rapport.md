@@ -18,4 +18,6 @@ The rice (C) is Japanese rice, the general shape of the rice grain is that of an
 
 # STEP 2 : COUNT GRAINS
 
-1. 
+1. 141 grains of Basmati rice
+2. 132 grains of Camargue rice
+3. 147 grains of Japanese rice

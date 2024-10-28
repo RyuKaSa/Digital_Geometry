@@ -49,7 +49,7 @@ int main(int argc, char** argv)
     // resources/Rice_basmati_seg_bin.pgm
     // resources/Rice_camargue_seg_bin.pgm
     // resources/Rice_japonais_seg_bin.pgm
-    Image image1 = PGMReader<Image>::importPGM ("resources/Rice_basmati_seg_bin.pgm");
+    Image image1 = PGMReader<Image>::importPGM ("resources/Rice_japonais_seg_bin.pgm");
 
     // 1) make a "digital set" of proper size
     DigitalSet aSet( image1.domain() ); // a digital set is created with the same domain as the image
