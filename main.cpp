@@ -40,6 +40,7 @@ Curve getBoundary(T & object)
 
 template<class T>
 void sendToBoard( Board2D & board, T & p_Object, DGtal::Color p_Color) {
+    // board << DGtal::SetMode(p_Object.className(), "Paving");
     board << CustomStyle( p_Object.className(), new DGtal::CustomFillColor(p_Color));
     board << p_Object;
 }
@@ -64,12 +65,15 @@ int main(int argc, char** argv)
         }
     }
 
+    std::cout << "*****************************" << std::endl;
     std::cout << "Number of files found: " << fileNames.size() << std::endl;
-    std::cout << "=============================" << std::endl;
+    std::cout << "*****************************" << std::endl;
 
-    for (const auto& fileName : fileNames)
-    {
+    for (const auto& fileName : fileNames) {
+        std::cout << "\n" << std::endl;
+        std::cout << "=============================" << std::endl;
         std::cout << "Processing file: " << fileName << std::endl;
+        std::cout << "-----------------------------" << std::endl;
 
         // Read the image from the current filename
         Image image1 = PGMReader<Image>::importPGM(fileName);
@@ -97,47 +101,82 @@ int main(int argc, char** argv)
         Point upperBound = image1.domain().upperBound();
 
         // 4) Boundary check for each component
-        for (const auto& component : objects)
-        {
+        for (const auto& component : objects) {
             bool isBoundary = false;
-            for (const auto& point : component.pointSet())
-            {
+            for (const auto& point : component.pointSet()) {
                 if (point[0] == lowerBound[0] || point[0] == upperBound[0] || 
-                    point[1] == lowerBound[1] || point[1] == upperBound[1])
-                {
+                    point[1] == lowerBound[1] || point[1] == upperBound[1]) {
                     isBoundary = true;
                     break;
                 }
             }
 
             // If not on boundary, add to final list; otherwise, count it as removed
-            if (isBoundary)
-            {
+            if (isBoundary) {
                 boundaryComponents++;
-            }
-            else
-            {
+            } else {
                 finalComponents.push_back(component);
             }
         }
 
+        // ============================
+        // STEP 2
+        // ============================
+
         // 5) Display the final results for the current file
         std::cout << "Number of components removed: " << boundaryComponents << std::endl;
         std::cout << "Final number of connected components: " << finalComponents.size() << std::endl;
-        std::cout << "=============================" << std::endl;
+        std::cout << "-----------------------------" << std::endl;
 
-        // save svg of a single component for each file
-        Board2D bBoard;
+        // ============================
+        // STEP 3
+        // ============================
 
-        sendToBoard(bBoard, finalComponents[0], Color::Red);
+        // 6) Create a Khalimsky space for the entire digital set
+        KSpace kSpace;
+        kSpace.init(aSet.domain().lowerBound() - Point(1, 1), 
+                    aSet.domain().upperBound() + Point(1, 1), 
+                    true);
 
-        // save to file, each file should have a unique name
-        bBoard.saveSVG((fileName + "_component.svg").c_str());
+        if (!finalComponents.empty()) {
+            // Process the first valid connected component
+            const auto& component = finalComponents[0];
 
-        // Step 3: Extract boundary for each final component
+            // Create a Khalimsky space for the entire digital set
+            KSpace kSpace;
+            kSpace.init(aSet.domain().lowerBound() - Point(1, 1), 
+                        aSet.domain().upperBound() + Point(1, 1), 
+                        true);
 
+            // Extract boundary for the first component
+            SurfelAdjacency<2> adjacency(true);
+            SCell bel = Surfaces<KSpace>::findABel(kSpace, component.pointSet(), 10000);
 
+            if (bel == typename KSpace::SCell()) {
+                std::cerr << "Could not find a valid bel for the component!" << std::endl;
+                continue;
+            }
 
+            std::vector<SCell> boundary;
+            Surfaces<KSpace>::track2DBoundary(boundary, kSpace, adjacency, component.pointSet(), bel);
+
+            // Use your existing logic for Board2D and saving
+            Board2D bBoard;
+
+            // Add the boundary cells to the board
+            for (const auto& cell : boundary) {
+                bBoard << cell; // Add each boundary cell to the board
+            }
+
+            // Save the visualization to a single SVG file
+            std::string boundaryFileName = std::filesystem::path(fileName).stem().string() + "_boundary.svg";
+            bBoard.saveSVG(("resources/" + boundaryFileName).c_str());
+            std::cout << "Saved boundary visualization to: " << boundaryFileName << std::endl;
+            std::cout << "=============================" << std::endl;
+        } else {
+            std::cout << "No valid components found for file: " << fileName << std::endl;
+            std::cout << "=============================" << std::endl;
+        }
     }
 
     return 0;
