@@ -31,7 +31,7 @@ We can remove the grains that are not fully visible, as they are not fully segme
 We can visualize using SVG, the grains of rice that are fully visible.
 
 <!-- svg for a single component -->
-[Japanese rice grain 1](resources/Rice_japonais_seg_bin.pgm_component.svg)
+![Japanese rice grain 1](resources/Rice_japonais_seg_bin.pgm_component.svg)
  ^ SVG of a single grain of Japanese rice.
 
 --------------------
@@ -41,5 +41,5 @@ We can visualize using SVG, the grains of rice that are fully visible.
 For each connected component, we extract the inter-pixel boundary.
 
 <!-- svg for a single component, japanese rice -->
-[Japanese rice grain 1 boundary](resources/Rice_japonais_seg_bin.pgm_component_boundary.svg)
+![Japanese rice grain 1 boundary](resources/Rice_japonais_seg_bin_boundary.svg)
  ^ SVG of the boundary of a single grain of Japanese rice.
