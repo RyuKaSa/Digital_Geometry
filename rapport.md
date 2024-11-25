@@ -30,5 +30,11 @@ We can remove the grains that are not fully visible, as they are not fully segme
 
 We can visualize using SVG, the grains of rice that are fully visible.
 
-<!-- svg for japanese rice, whole image : "Rice_japonais_seg_bin.pgm.svg" -->
-[Japanese rice grains](Rice_japonais_seg_bin.pgm.svg)
+<!-- svg for a single component -->
+[Japanese rice grain 1](Rice_japonais_seg_bin.pgm_component.svg)
+ ^ SVG of a single grain of Japanese rice.
+
+--------------------
+
+# STEP 3 : EXTRACT DIGITAL OBJECT BOUNDARY
+

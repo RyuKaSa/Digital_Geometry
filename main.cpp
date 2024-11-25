@@ -126,16 +126,13 @@ int main(int argc, char** argv)
         std::cout << "Final number of connected components: " << finalComponents.size() << std::endl;
         std::cout << "=============================" << std::endl;
 
-        // bonus, visualize using aBoard, and sendtoboard and save
-        Board2D aBoard;
+        // save svg of a single component for each file
+        Board2D bBoard;
 
-        sendToBoard(aBoard, aSet, Color::Red);
+        sendToBoard(bBoard, finalComponents[0], Color::Red);
 
         // save to file, each file should have a unique name
-        aBoard.saveSVG((fileName + ".svg").c_str());
-
-        // print the current dir
-        // std::cout << fs::current_path() << std::endl;
+        bBoard.saveSVG((fileName + "_component.svg").c_str());
 
         // Step 3: Extract boundary for each final component
 
