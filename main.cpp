@@ -5,6 +5,7 @@
 #include "DGtal/io/writers/GenericWriter.h"
 #include <DGtal/images/imagesSetsUtils/SetFromImage.h>
 #include <DGtal/io/boards/Board2D.h>
+#include <DGtal/io/Color.h>
 #include <DGtal/io/colormaps/ColorBrightnessColorMap.h>
 #include <DGtal/topology/SurfelAdjacency.h>
 #include <DGtal/topology/helpers/Surfaces.h>
@@ -26,34 +27,34 @@ Curve getBoundary(T & object)
 {
     //Khalimsky space
     KSpace kSpace;
-    // we need to add a margine to prevent situations such that an object touch the bourder of the domain
-    kSpace.init( object.domain().lowerBound() - Point(1,1), object.domain().upperBound() + Point(1,1), true );
+    // we need to add a margin to prevent situations where an object touches the boundary of the domain
+    kSpace.init(object.domain().lowerBound() - Point(1,1), object.domain().upperBound() + Point(1,1), true);
 
-    // 1) Call Surfaces::findABel() to find a cell which belongs to the border
-    std::vector<Z2i::Point> boundaryPoints; // boundary points are going to be stored here
-    // 2) Call Surfece::track2DBoundaryPoints to extract the boundary of the object
+    // 1) Call Surfaces::findABel() to find a cell belonging to the border
+    std::vector<Z2i::Point> boundaryPoints; // boundary points are stored here
+    // 2) Call Surfaces::track2DBoundaryPoints to extract the boundary of the object
     Curve boundaryCurve;
     // 3) Create a curve from a vector
     return boundaryCurve;
 }
 
-// template<class T>
-// void sendToBoard( Board2D & board, T & p_Object, DGtal::Color p_Color) {
-//     board << CustomStyle( p_Object.className(), new DGtal::CustomFillColor(p_Color));
-//     board << p_Object;
-// }
+template<class T>
+void sendToBoard( Board2D & board, T & p_Object, DGtal::Color p_Color) {
+    board << CustomStyle( p_Object.className(), new DGtal::CustomFillColor(p_Color));
+    board << p_Object;
+}
 
 int main(int argc, char** argv)
 {
-    setlocale(LC_NUMERIC, "us_US"); // To prevent French local settings
-    typedef ImageSelector<Domain, unsigned char >::Type Image; // Type of image
-    typedef DigitalSetSelector< Domain, BIG_DS+HIGH_BEL_DS >::Type DigitalSet; // Digital set type
+    setlocale(LC_NUMERIC, "us_US"); // To prevent French locale settings
+    typedef ImageSelector<Domain, unsigned char>::Type Image; // Type of image
+    typedef DigitalSetSelector<Domain, BIG_DS+HIGH_BEL_DS>::Type DigitalSet; // Digital set type
     typedef Object<DT4_8, DigitalSet> ObjectType; // Digital object type
 
     std::vector<std::string> fileNames;
     std::string directoryPath = "resources/";
 
-    // Iterate over all files in the directory for pgm specifically
+    // Iterate over all files in the directory for .pgm specifically
     for (const auto& entry : fs::directory_iterator(directoryPath)) {
         if (entry.is_regular_file()) {
             std::string filePath = entry.path().string();
@@ -121,10 +122,25 @@ int main(int argc, char** argv)
         }
 
         // 5) Display the final results for the current file
-        // std::cout << "File name: " << fileName << std::endl;
         std::cout << "Number of components removed: " << boundaryComponents << std::endl;
         std::cout << "Final number of connected components: " << finalComponents.size() << std::endl;
         std::cout << "=============================" << std::endl;
+
+        // bonus, visualize using aBoard, and sendtoboard and save
+        Board2D aBoard;
+
+        sendToBoard(aBoard, aSet, Color::Red);
+
+        // save to file, each file should have a unique name
+        aBoard.saveSVG((fileName + ".svg").c_str());
+
+        // print the current dir
+        // std::cout << fs::current_path() << std::endl;
+
+        // Step 3: Extract boundary for each final component
+
+
+
     }
 
     return 0;

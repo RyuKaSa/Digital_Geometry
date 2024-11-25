@@ -21,3 +21,14 @@ The rice (C) is Japanese rice, the general shape of the rice grain is that of an
 1. 141 grains of Basmati rice
 2. 132 grains of Camargue rice
 3. 147 grains of Japanese rice
+
+We can remove the grains that are not fully visible, as they are not fully segmented. We will then count the number of grains that are fully visible.
+
+1. 124 grains of Basmati rice
+2. 112 grains of Camargue rice
+3. 138 grains of Japanese rice
+
+We can visualize using SVG, the grains of rice that are fully visible.
+
+<!-- svg for japanese rice, whole image : "Rice_japonais_seg_bin.pgm.svg" -->
+[Japanese rice grains](Rice_japonais_seg_bin.pgm.svg)
