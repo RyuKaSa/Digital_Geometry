@@ -43,3 +43,6 @@ For each connected component, we extract the inter-pixel boundary.
 <!-- svg for a single component, japanese rice -->
 ![Japanese rice grain 1 boundary](resources/Rice_japonais_seg_bin_boundary.svg)
  ^ SVG of the boundary of a single grain of Japanese rice.
+
+# STEP 4 : POLYGONIZE DIGITAL OBJECT BOUNDARY
+

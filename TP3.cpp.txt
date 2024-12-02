@@ -1,0 +1,84 @@
+#include <DGtal/base/Common.h>
+#include <DGtal/helpers/StdDefs.h>
+#include <DGtal/images/ImageSelector.h>
+#include <DGtal/io/readers/GenericReader.h>
+#include <DGtal/io/writers/GenericWriter.h>
+#include <DGtal/io/viewers/Viewer3D.h>
+#include <DGtal/images/imagesSetsUtils/SetFromImage.h>
+
+#include <iostream>
+#include <vector>
+#include <filesystem>
+#include <string>
+
+using namespace std;
+using namespace DGtal;
+using namespace Z2i;
+
+namespace fs = std::filesystem;
+
+int main(int argc, char **argv)
+{
+    setlocale(LC_NUMERIC, "us_US");                                            // To prevent French locale settings
+    typedef ImageSelector<Domain, unsigned char>::Type Image;                  // Type of image
+    typedef DigitalSetSelector<Domain, BIG_DS + HIGH_BEL_DS>::Type DigitalSet; // Digital set type
+    typedef Object<DT4_8, DigitalSet> ObjectType;                              // Digital object type
+
+    std::vector<std::string> fileNames;
+    std::string directoryPath = "3D/";
+
+    // Iterate over all files in the directory for .vol specifically
+    for (const auto &entry : fs::directory_iterator(directoryPath))
+    {
+        if (entry.is_regular_file())
+        {
+            std::string filePath = entry.path().string();
+            if (filePath.size() >= 12 && filePath.substr(filePath.size() - 12) == ".vol")
+            {
+                fileNames.push_back(filePath);
+            }
+        }
+    }
+
+    std::cout << "*****************************" << std::endl;
+    std::cout << "Number of files found: " << fileNames.size() << std::endl;
+    std::cout << "*****************************" << std::endl;
+
+    for (const auto &fileName : fileNames)
+    {
+        std::cout << "\n"
+                << std::endl;
+        std::cout << "=============================" << std::endl;
+        std::cout << "Processing file: " << fileName << std::endl;
+        std::cout << "-----------------------------" << std::endl;
+
+        // Read the 2D image
+        Image image = GenericReader<Image>::import(fileName);
+
+        // Create a digital set from the image
+        DigitalSet set(image.domain());
+        SetFromImage<DigitalSet>::append(set, image, 1, 255);
+
+        // Analyze the digital set (if needed, e.g., compute connected components)
+        ObjectType object(Domain(set.domain().lowerBound(), set.domain().upperBound()), set);
+        std::cout << "Number of points in the set: " << object.size() << std::endl;
+
+        // Optional: Save the processed set or generate any derived data
+        // GenericWriter<DigitalSet>::exportFile("processed_" + fileName, set);
+
+        // 3D Viewer setup
+        QApplication application(argc, argv); // QApplication setup for visualization
+        typedef Viewer3D<> MyViewer;
+        MyViewer viewer;
+        viewer.show();
+
+        // Display the digital set
+        viewer << SetMode3D(image.domain().className(), "BoundingBox");
+        viewer << set << image.domain() << MyViewer::updateDisplay;
+
+        // Start the QApplication event loop
+        application.exec();
+    }
+
+    return 0;
+}
