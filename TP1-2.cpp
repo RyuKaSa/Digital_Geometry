@@ -228,7 +228,6 @@ int main(int argc, char **argv)
             std::cout << "Saved boundary visualization to: " << boundaryFileName << std::endl;
             std::cout << "-----------------------------" << std::endl;
 
-
             // ============================
             // STEP 4: POLYGONIZE DIGITAL OBJECT BOUNDARY
             // ============================
@@ -242,10 +241,6 @@ int main(int argc, char **argv)
             {
                 try
                 {
-                    // Extract boundary surfels
-                    std::vector<SCell> boundary;
-                    Surfaces<KSpace>::track2DBoundary(boundary, kSpace, adjacency, component.pointSet(), bel);
-
                     // Generate Freeman chain code manually
                     std::stringstream ss;
                     ss << kSpace.sKCoords(boundary[0])[0] << " " << kSpace.sKCoords(boundary[0])[1] << " "; // Starting point
@@ -278,7 +273,8 @@ int main(int argc, char **argv)
                                 } else if (dx < 0) {
                                     ss << "2"; // West
                                     dx += 1;
-                                } else if (dy > 0) {
+                                }
+                                if (dy > 0) {
                                     ss << "1"; // North
                                     dy -= 1;
                                 } else if (dy < 0) {
@@ -289,40 +285,93 @@ int main(int argc, char **argv)
                         }
                     }
 
+                    // Close the chain
+                    auto endpoint = computeEndpoint(kSpace.sKCoords(boundary[0])[0], kSpace.sKCoords(boundary[0])[1], ss.str());
+                    int deltaX = kSpace.sKCoords(boundary[0])[0] - endpoint.first;
+                    int deltaY = kSpace.sKCoords(boundary[0])[1] - endpoint.second;
+                    std::string closureChain = generateClosureChain(deltaX, deltaY);
+                    ss << closureChain;
+                    ss << "\n"; // Ensure the chain ends with a newline
+
+                    // Print the chain code
+                    // std::string chainCodeStr = ss.str();
+                    // std::cout << "Chain code: " << chainCodeStr << std::endl;
+
                     // Construct the FreemanChain object
                     Contour4 theContour(ss);
 
-                    // Initialize GreedySegmentation with DSSComputer
-                    Decomposition4 segmentation(theContour.begin(), theContour.end(), DSS4());
+                    // **New Section: Calculate Average Position and Max Size**
 
-                    // Visualization
-                    Board2D polygonBoard;
+                    double sumX = 0.0, sumY = 0.0;
+                    int count = 0;
+                    int minX = std::numeric_limits<int>::max();
+                    int maxX = std::numeric_limits<int>::min();
+                    int minY = std::numeric_limits<int>::max();
+                    int maxY = std::numeric_limits<int>::min();
 
-                    // Optional: Display the original boundary for comparison
-                    polygonBoard << CustomStyle("Boundary", new CustomPenColor(Color::Blue));
-                    polygonBoard << theContour; // Draw the original boundary in blue
-
-                    // Define a custom style for the polygonized boundary segments
-                    polygonBoard << CustomStyle("PolygonSegments", new CustomPenColor(Color::Red));
-
-                    // Draw each segmented line in red
-                    for (auto it = segmentation.begin(); it != segmentation.end(); ++it)
+                    // Iterate through all points in the Freeman chain
+                    for(auto it = theContour.begin(); it != theContour.end(); ++it)
                     {
-                        polygonBoard << SetMode("ArithmeticalDSS", "Points")
-                                    << it->primitive();
-                        polygonBoard << SetMode("ArithmeticalDSS", "BoundingBox")
-                                    << CustomStyle("ArithmeticalDSS/BoundingBox",
-                                                    new CustomPenColor(Color::Red))
-                                    << it->primitive();
+                        Point p = *it;
+                        sumX += p[0];
+                        sumY += p[1];
+                        count++;
+
+                        if(p[0] < minX) minX = p[0];
+                        if(p[0] > maxX) maxX = p[0];
+                        if(p[1] < minY) minY = p[1];
+                        if(p[1] > maxY) maxY = p[1];
                     }
 
-                    // Save the visualization to an SVG file
-                    std::string polygonFileName = std::filesystem::path(fileName).stem().string() + "_polygon.svg";
-                    polygonBoard.saveSVG(("resources/" + polygonFileName).c_str());
+                    // Calculate average positions
+                    double avgX = sumX / count;
+                    double avgY = sumY / count;
 
-                    std::cout << "Polygonized boundary saved to: " << polygonFileName << std::endl;
-                    // print the chain code
-                    std::cout << "Chain code: " << ss.str() << std::endl;
+                    // Calculate width and height
+                    int width = maxX - minX;
+                    int height = maxY - minY;
+
+                    // Define padding to ensure the Freeman chain isn't touching the borders
+                    int padding = 10; // Adjust as needed
+
+                    // Define the new domain based on the calculations
+                    Point p1(minX - padding, minY - padding);
+                    Point p2(maxX + padding, maxY + padding);
+                    Domain domain(p1, p2);
+
+                    // **Optional: Print the calculated values for debugging**
+                    // cout << "Average Position: (" << avgX << ", " << avgY << ")\n";
+                    // cout << "Width: " << width << ", Height: " << height << "\n";
+                    // cout << "Domain: (" << p1 << ") to (" << p2 << ")\n";
+
+                    // Segmentation
+                    Decomposition4 theDecomposition(theContour.begin(), theContour.end(), DSS4());
+
+                    // Draw the domain and the contour
+                    Board2D aBoard;
+                    aBoard << SetMode(domain.className(), "Grid")
+                        << domain
+                        << SetMode("PointVector", "Grid");
+
+                    // Draw each segment
+                    string styleName = "";
+                    for (Decomposition4::SegmentComputerIterator
+                            itSeg = theDecomposition.begin(),
+                            itEndSeg = theDecomposition.end();
+                        itSeg != itEndSeg; ++itSeg)
+                    {
+                        aBoard << SetMode("ArithmeticalDSS", "Points")
+                            << itSeg->primitive();
+                        aBoard << SetMode("ArithmeticalDSS", "BoundingBox")
+                            << CustomStyle("ArithmeticalDSS/BoundingBox",
+                                            new CustomPenColor(Color::Blue))
+                            << itSeg->primitive();
+                    }
+
+                    // Save the outputs
+                    std::string svgFileName = std::filesystem::path(fileName).stem().string() + "_greedy-dss-decomposition.svg";
+                    aBoard.saveSVG(("resources/" + svgFileName).c_str());
+                    std::cout << "Saved greedy DSS decomposition to: " << svgFileName << std::endl;
                 }
                 catch (const std::exception &e)
                 {
