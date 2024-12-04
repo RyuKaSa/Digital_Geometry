@@ -18,6 +18,7 @@
 #include <string>
 #include <sstream>
 #include <limits>
+#include <algorithm> // For std::sort
 
 using namespace std;
 using namespace DGtal;
@@ -27,10 +28,10 @@ namespace fs = std::filesystem;
 
 // Define direction mappings for 4-connected Freeman chain codes
 const std::vector<std::pair<int, int>> directionOffsets = {
-    {1, 0},   // 0: East
-    {0, 1},   // 1: North
-    {-1, 0},  // 2: West
-    {0, -1}   // 3: South
+    {1, 0},  // 0: East
+    {0, 1},  // 1: North
+    {-1, 0}, // 2: West
+    {0, -1}  // 3: South
 };
 
 // Function to compute the endpoint based on chain code
@@ -90,6 +91,44 @@ std::string generateClosureChain(int deltaX, int deltaY)
     return closureChain;
 }
 
+// === Added: Helper Functions ===
+
+// Function to compute polygon area using Shoelace formula
+double computePolygonArea(const std::vector<Point> &vertices)
+{
+    if (vertices.size() < 3)
+        return 0.0; // Not a polygon
+
+    double area = 0.0;
+    size_t n = vertices.size();
+
+    for (size_t i = 0; i < n; ++i)
+    {
+        const Point &current = vertices[i];
+        const Point &next = vertices[(i + 1) % n];
+        area += (current[0] * next[1]) - (next[0] * current[1]);
+    }
+
+    return std::abs(area) / 2.0;
+}
+
+// Function to compute median of a vector
+double computeMedian(std::vector<double> data)
+{
+    if (data.empty())
+        return 0.0;
+
+    std::sort(data.begin(), data.end());
+    size_t n = data.size();
+    if (n % 2 == 0)
+    {
+        return (data[n / 2 - 1] + data[n / 2]) / 2.0;
+    }
+    else
+    {
+        return data[n / 2];
+    }
+}
 int main(int argc, char **argv)
 {
     setlocale(LC_NUMERIC, "us_US"); // To prevent locale issues
@@ -192,8 +231,8 @@ int main(int argc, char **argv)
         // 6) Create a Khalimsky space for the entire digital set
         KSpace kSpace;
         kSpace.init(aSet.domain().lowerBound() - Point(1, 1),
-                   aSet.domain().upperBound() + Point(1, 1),
-                   true);
+                    aSet.domain().upperBound() + Point(1, 1),
+                    true);
 
         if (!finalComponents.empty())
         {
@@ -207,32 +246,18 @@ int main(int argc, char **argv)
             if (bel == typename KSpace::SCell())
             {
                 std::cerr << "Could not find a valid bel for the component!" << std::endl;
+                std::cout << "=============================" << std::endl;
                 continue;
             }
 
             std::vector<SCell> boundary;
             Surfaces<KSpace>::track2DBoundary(boundary, kSpace, adjacency, component.pointSet(), bel);
 
-            // Use your existing logic for Board2D and saving
-            Board2D bBoard;
-
-            // Add the boundary cells to the board
-            for (const auto &cell : boundary)
-            {
-                bBoard << cell; // Add each boundary cell to the board
-            }
-
-            // Save the visualization to a single SVG file
-            std::string boundaryFileName = std::filesystem::path(fileName).stem().string() + "_boundary.svg";
-            bBoard.saveSVG(("resources/" + boundaryFileName).c_str());
-            std::cout << "Saved boundary visualization to: " << boundaryFileName << std::endl;
-            std::cout << "-----------------------------" << std::endl;
-
             // ============================
             // STEP 4: POLYGONIZE DIGITAL OBJECT BOUNDARY
             // ============================
 
-            // Type definitions aligned with the working example
+            // Type definitions
             typedef FreemanChain<int> Contour4;
             typedef ArithmeticalDSSComputer<Contour4::ConstIterator, int, 4> DSS4;
             typedef GreedySegmentation<DSS4> Decomposition4;
@@ -267,17 +292,23 @@ int main(int argc, char **argv)
                             // Handle invalid moves by breaking them into smaller steps
                             while (dx != 0 || dy != 0)
                             {
-                                if (dx > 0) {
+                                if (dx > 0)
+                                {
                                     ss << "0"; // East
                                     dx -= 1;
-                                } else if (dx < 0) {
+                                }
+                                else if (dx < 0)
+                                {
                                     ss << "2"; // West
                                     dx += 1;
                                 }
-                                if (dy > 0) {
+                                if (dy > 0)
+                                {
                                     ss << "1"; // North
                                     dy -= 1;
-                                } else if (dy < 0) {
+                                }
+                                else if (dy < 0)
+                                {
                                     ss << "3"; // South
                                     dy += 1;
                                 }
@@ -293,14 +324,10 @@ int main(int argc, char **argv)
                     ss << closureChain;
                     ss << "\n"; // Ensure the chain ends with a newline
 
-                    // Print the chain code
-                    // std::string chainCodeStr = ss.str();
-                    // std::cout << "Chain code: " << chainCodeStr << std::endl;
-
                     // Construct the FreemanChain object
                     Contour4 theContour(ss);
 
-                    // **New Section: Calculate Average Position and Max Size**
+                    // **Calculate Average Position and Max Size**
 
                     double sumX = 0.0, sumY = 0.0;
                     int count = 0;
@@ -310,17 +337,21 @@ int main(int argc, char **argv)
                     int maxY = std::numeric_limits<int>::min();
 
                     // Iterate through all points in the Freeman chain
-                    for(auto it = theContour.begin(); it != theContour.end(); ++it)
+                    for (auto it = theContour.begin(); it != theContour.end(); ++it)
                     {
                         Point p = *it;
                         sumX += p[0];
                         sumY += p[1];
                         count++;
 
-                        if(p[0] < minX) minX = p[0];
-                        if(p[0] > maxX) maxX = p[0];
-                        if(p[1] < minY) minY = p[1];
-                        if(p[1] > maxY) maxY = p[1];
+                        if (p[0] < minX)
+                            minX = p[0];
+                        if (p[0] > maxX)
+                            maxX = p[0];
+                        if (p[1] < minY)
+                            minY = p[1];
+                        if (p[1] > maxY)
+                            maxY = p[1];
                     }
 
                     // Calculate average positions
@@ -339,57 +370,75 @@ int main(int argc, char **argv)
                     Point p2(maxX + padding, maxY + padding);
                     Domain domain(p1, p2);
 
-                    // **Optional: Print the calculated values for debugging**
-                    // cout << "Average Position: (" << avgX << ", " << avgY << ")\n";
-                    // cout << "Width: " << width << ", Height: " << height << "\n";
-                    // cout << "Domain: (" << p1 << ") to (" << p2 << ")\n";
-
                     // Segmentation
                     Decomposition4 theDecomposition(theContour.begin(), theContour.end(), DSS4());
 
                     // Draw the domain and the contour
                     Board2D aBoard;
                     aBoard << SetMode(domain.className(), "Grid")
-                        << domain
-                        << SetMode("PointVector", "Grid");
+                           << domain
+                           << SetMode("PointVector", "Grid");
 
                     // Draw each segment
                     string styleName = "";
                     for (Decomposition4::SegmentComputerIterator
-                            itSeg = theDecomposition.begin(),
-                            itEndSeg = theDecomposition.end();
-                        itSeg != itEndSeg; ++itSeg)
+                             itSeg = theDecomposition.begin(),
+                             itEndSeg = theDecomposition.end();
+                         itSeg != itEndSeg; ++itSeg)
                     {
                         aBoard << SetMode("ArithmeticalDSS", "Points")
-                            << itSeg->primitive();
+                               << itSeg->primitive();
                         aBoard << SetMode("ArithmeticalDSS", "BoundingBox")
-                            << CustomStyle("ArithmeticalDSS/BoundingBox",
-                                            new CustomPenColor(Color::Blue))
-                            << itSeg->primitive();
+                               << CustomStyle("ArithmeticalDSS/BoundingBox",
+                                              new CustomPenColor(Color::Blue))
+                               << itSeg->primitive();
                     }
 
                     // Save the outputs
                     std::string svgFileName = std::filesystem::path(fileName).stem().string() + "_greedy-dss-decomposition.svg";
                     aBoard.saveSVG(("resources/" + svgFileName).c_str());
                     std::cout << "Saved greedy DSS decomposition to: " << svgFileName << std::endl;
+
+                    // ============================
+                    // STEP 5: CALCULATE AREA
+                    // ============================
+
+                    // 1. Compute area as number of 2-cells
+                    double area_2cells = static_cast<double>(component.pointSet().size());
+
+                    // 2. Compute polygon area using Shoelace formula
+
+                    // Extract ordered list of polygon vertices from the Freeman chain
+                    std::vector<Point> polygonVertices;
+                    for (auto it = theContour.begin(); it != theContour.end(); ++it)
+                    {
+                        polygonVertices.push_back(*it);
+                    }
+
+                    // Compute polygon area using Shoelace formula
+                    double area_polygon_val = computePolygonArea(polygonVertices);
+
+                    // Display the computed areas
+                    std::cout << "Area of the component (Number of 2-cells): " << area_2cells << std::endl;
+                    std::cout << "Area of the component (Polygon Area): " << area_polygon_val << std::endl;
+
+                    std::cout << "=============================" << std::endl;
                 }
                 catch (const std::exception &e)
                 {
-                    std::cerr << "Polygonization failed: " << e.what() << std::endl;
+                    std::cerr << "Polygonization or area calculation failed: " << e.what() << std::endl;
+                    std::cout << "=============================" << std::endl;
                 }
-
-                std::cout << "=============================" << std::endl;
             }
             else
             {
-                std::cout << "Boundary is empty. Skipping polygonization." << std::endl;
+                std::cout << "Boundary is empty. Skipping polygonization and area calculation." << std::endl;
                 std::cout << "=============================" << std::endl;
             }
-
         }
         else
         {
-            std::cout << "No valid components found. Skipping Freeman chain processing." << std::endl;
+            std::cout << "No valid components found. Skipping processing." << std::endl;
             std::cout << "=============================" << std::endl;
         }
     }
