@@ -177,18 +177,18 @@ Perimeter Statistics (1-Cells Perimeter):
 
 ### Distinct Average Perimeters:
 
-Rice Japonica has the smallest average perimeter.
+Rice Japonais has the smallest average perimeter.
 Rice Camargue and Basmati have larger average perimeters.
 
 ### Variability:
 
-Rice Japonica shows low variability (SD ≈ 17.5), indicating uniform grain sizes.
+Rice Japonais shows low variability (SD ≈ 17.5), indicating uniform grain sizes.
 Rice Camargue and Basmati exhibit higher variability (SD ≈ 69.4 and 82.1), suggesting a wider range of sizes.
 
 ### Overlap in Perimeter Ranges:
 
 Perimeter ranges for Camargue and Basmati overlap significantly.
-Japonica's perimeter range is distinct from the others.
+Japonais's perimeter range is distinct from the others.
 
 ### Implications:
 
@@ -209,17 +209,186 @@ The circularity measure we used, defined as :
 
     ( 4𝜋*Area ) / ( Perimeter^2 )
 
-​
  --inherently ranges from 0 to 1. A value closer to 1 indicates a shape that is more perfectly circular, because for a true circle this formula yields exactly 1. As shapes become more elongated or irregular, their perimeter increases more rapidly than their area, causing the circularity value to decrease towards 0.
+
+--------------------
 
 ### Implications on Different Grain Shapes :
 
-Looking at the computed circularities, the Japonica grains have higher circularity values, suggesting they are more compact and closer to a rounded shape. The Camargue grains, with intermediate circularity, appear moderately elongated. The Basmati grains, showing the lowest circularities, are the most elongated and least circle-like. Thus, the circularity measure helps distinguish grain types by quantifying how closely their shapes resemble a circle—higher values correspond to more compact, rounded shapes and lower values correspond to more elongated, irregular ones.
+Looking at the computed circularities, the Japonais grains have higher circularity values, suggesting they are more compact and closer to a rounded shape. The Camargue grains, with intermediate circularity, appear moderately elongated. The Basmati grains, showing the lowest circularities, are the most elongated and least circle-like. Thus, the circularity measure helps distinguish grain types by quantifying how closely their shapes resemble a circle—higher values correspond to more compact, rounded shapes and lower values correspond to more elongated, irregular ones.
 
 Thus we can to some reasonable extent, distinguish between the three types of rice grains based on their circularity values.
+
+--------------------
 
 # STEP 8 (OPTIONAL): FIND USEFUL MEASURES FOR THE GRAIN CLASSIFICATION
 
 # STEP 9 (OPTIONAL): CLASSIFICATION OF GRAINS
 
 # STEP 10 (OPTIONAL): IMPROVE GRAIN SEGMENTATION
+
+
+# Current console output of the program
+
+```
+*****************************
+Number of files found: 3
+*****************************
+
+
+=============================
+Processing file: resources/Rice_japonais_seg_bin.pgm
+-----------------------------
+Initial number of connected components: 147
+Number of components removed: 9
+Final number of connected components: 138
+-----------------------------
+Saved greedy DSS decomposition to: Rice_japonais_seg_bin_greedy-dss-decomposition.svg
+-----------------------------
+Area statistics (Number of 2-cells):
+Average: 2068.46
+Median: 2078
+Minimum: 1744
+Maximum: 2382
+-----------------------------
+Area statistics (Polygon Area):
+Average: 8272.74
+Median: 8322.25
+Minimum: 6959
+Maximum: 9485
+-----------------------------
+Perimeter statistics (Number of 1-cells):
+Average: 220.362
+Median: 220
+Minimum: 196
+Maximum: 242
+-----------------------------
+Perimeter statistics (Polygon Perimeter):
+Average: 444.162
+Median: 443.325
+Minimum: 393.414
+Maximum: 486
+-----------------------------
+Circularity statistics:
+Average: 0.527097
+Median: 0.528177
+Minimum: 0.475761
+Maximum: 0.60165
+=============================
+
+
+=============================
+Processing file: resources/Rice_camargue_seg_bin.pgm
+-----------------------------
+Initial number of connected components: 132
+Number of components removed: 20
+Final number of connected components: 112
+-----------------------------
+Saved greedy DSS decomposition to: Rice_camargue_seg_bin_greedy-dss-decomposition.svg
+-----------------------------
+Area statistics (Number of 2-cells):
+Average: 2693.56
+Median: 2829
+Minimum: 921
+Maximum: 3417
+-----------------------------
+Area statistics (Polygon Area):
+Average: 10771.9
+Median: 11292.5
+Minimum: 3674
+Maximum: 13708
+-----------------------------
+Perimeter statistics (Number of 1-cells):
+Average: 272.107
+Median: 279
+Minimum: 142
+Maximum: 344
+-----------------------------
+Perimeter statistics (Polygon Perimeter):
+Average: 547.622
+Median: 562
+Minimum: 285.414
+Maximum: 694.606
+-----------------------------
+Circularity statistics:
+Average: 0.450732
+Median: 0.445229
+Minimum: 0.327991
+Maximum: 0.575507
+=============================
+
+
+=============================
+Processing file: resources/Rice_basmati_seg_bin.pgm
+-----------------------------
+Initial number of connected components: 141
+Number of components removed: 17
+Final number of connected components: 124
+-----------------------------
+Saved greedy DSS decomposition to: Rice_basmati_seg_bin_greedy-dss-decomposition.svg
+-----------------------------
+Area statistics (Number of 2-cells):
+Average: 2249.97
+Median: 2321.5
+Minimum: 801
+Maximum: 3897
+-----------------------------
+Area statistics (Polygon Area):
+Average: 8998.8
+Median: 9315
+Minimum: 3181
+Maximum: 15559
+-----------------------------
+Perimeter statistics (Number of 1-cells):
+Average: 291.952
+Median: 296
+Minimum: 152
+Maximum: 388
+-----------------------------
+Perimeter statistics (Polygon Perimeter):
+Average: 586.695
+Median: 594
+Minimum: 304
+Maximum: 780
+-----------------------------
+Circularity statistics:
+Average: 0.332809
+Median: 0.325142
+Minimum: 0.248882
+Maximum: 0.499553
+=============================
+
+=============================
+Analyzing perimeter distributions across files:
+-----------------------------
+File: resources/Rice_basmati_seg_bin.pgm
+Number of grains: 124
+Perimeter statistics (Polygon Perimeter):
+Average: 586.695
+Median: 594
+Minimum: 304
+Maximum: 780
+Standard Deviation: 81.954
+-----------------------------
+File: resources/Rice_camargue_seg_bin.pgm
+Number of grains: 112
+Perimeter statistics (Polygon Perimeter):
+Average: 547.622
+Median: 562
+Minimum: 285.414
+Maximum: 694.606
+Standard Deviation: 69.6763
+-----------------------------
+File: resources/Rice_japonais_seg_bin.pgm
+Number of grains: 138
+Perimeter statistics (Polygon Perimeter):
+Average: 444.162
+Median: 443.325
+Minimum: 393.414
+Maximum: 486
+Standard Deviation: 17.758
+=============================
+
+
+All files processed successfully.
+```
