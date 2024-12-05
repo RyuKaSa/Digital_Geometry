@@ -18,7 +18,8 @@
 #include <string>
 #include <sstream>
 #include <limits>
-#include <algorithm> // For std::sort
+#include <algorithm> // For std::
+#include <numeric>
 
 using namespace std;
 using namespace DGtal;
@@ -46,7 +47,7 @@ std::pair<int, int> computeEndpoint(int startX, int startY, const std::string &c
         int direction = c - '0';
         if (direction < 0 || direction >= directionOffsets.size())
         {
-            std::cerr << "Invalid direction in chain code: " << direction << std::endl;
+            // std::cerr << "Invalid direction in chain code: " << direction << std::endl;
             continue;
         }
         x += directionOffsets[direction].first;
@@ -84,7 +85,7 @@ std::string generateClosureChain(int deltaX, int deltaY)
         else
         {
             // For 4-connected, diagonal moves should not occur
-            std::cerr << "Cannot close chain with diagonal moves: deltaX = " << deltaX << ", deltaY = " << deltaY << std::endl;
+            // std::cerr << "Cannot close chain with diagonal moves: deltaX = " << deltaX << ", deltaY = " << deltaY << std::endl;
             break;
         }
     }
@@ -129,6 +130,7 @@ double computeMedian(std::vector<double> data)
         return data[n / 2];
     }
 }
+
 int main(int argc, char **argv)
 {
     setlocale(LC_NUMERIC, "us_US"); // To prevent locale issues
@@ -236,7 +238,7 @@ int main(int argc, char **argv)
 
         if (!finalComponents.empty())
         {
-            // Process only the first valid connected component
+            // Process only the first valid connected component for visualization (Step 4)
             const auto &component = finalComponents[0];
 
             // Extract boundary for the first component
@@ -399,42 +401,170 @@ int main(int argc, char **argv)
                     aBoard.saveSVG(("resources/" + svgFileName).c_str());
                     std::cout << "Saved greedy DSS decomposition to: " << svgFileName << std::endl;
 
-                    // ============================
-                    // STEP 5: CALCULATE AREA
-                    // ============================
-
-                    // 1. Compute area as number of 2-cells
-                    double area_2cells = static_cast<double>(component.pointSet().size());
-
-                    // 2. Compute polygon area using Shoelace formula
-
-                    // Extract ordered list of polygon vertices from the Freeman chain
-                    std::vector<Point> polygonVertices;
-                    for (auto it = theContour.begin(); it != theContour.end(); ++it)
-                    {
-                        polygonVertices.push_back(*it);
-                    }
-
-                    // Compute polygon area using Shoelace formula
-                    double area_polygon_val = computePolygonArea(polygonVertices);
-
-                    // Display the computed areas
-                    std::cout << "Area of the component (Number of 2-cells): " << area_2cells << std::endl;
-                    std::cout << "Area of the component (Polygon Area): " << area_polygon_val << std::endl;
-
-                    std::cout << "=============================" << std::endl;
                 }
                 catch (const std::exception &e)
                 {
-                    std::cerr << "Polygonization or area calculation failed: " << e.what() << std::endl;
+                    std::cerr << "Polygonization or visualization failed: " << e.what() << std::endl;
                     std::cout << "=============================" << std::endl;
                 }
             }
             else
             {
-                std::cout << "Boundary is empty. Skipping polygonization and area calculation." << std::endl;
+                std::cout << "Boundary is empty. Skipping polygonization and visualization." << std::endl;
                 std::cout << "=============================" << std::endl;
             }
+
+            // ============================
+            // STEP 5: CALCULATE AREA FOR ALL COMPONENTS
+            // ============================
+
+            std::vector<double> areas_2cells;
+            std::vector<double> areas_polygon;
+
+            for (const auto &comp : finalComponents)
+            {
+                // Compute area as number of 2-cells
+                double area_2cells = static_cast<double>(comp.pointSet().size());
+                areas_2cells.push_back(area_2cells);
+
+                // Extract boundary for the component
+                SurfelAdjacency<2> adjacency(false); // Use 4-connected adjacency
+                SCell bel = Surfaces<KSpace>::findABel(kSpace, comp.pointSet(), 10000);
+
+                if (bel == typename KSpace::SCell())
+                {
+                    std::cerr << "Could not find a valid bel for a component!" << std::endl;
+                    continue;
+                }
+
+                std::vector<SCell> boundary_comp;
+                Surfaces<KSpace>::track2DBoundary(boundary_comp, kSpace, adjacency, comp.pointSet(), bel);
+
+                if (!boundary_comp.empty())
+                {
+                    try
+                    {
+                        // Generate Freeman chain code manually
+                        std::stringstream ss;
+                        ss << kSpace.sKCoords(boundary_comp[0])[0] << " " << kSpace.sKCoords(boundary_comp[0])[1] << " "; // Starting point
+
+                        for (size_t i = 1; i < boundary_comp.size(); ++i)
+                        {
+                            auto prev = kSpace.sKCoords(boundary_comp[i - 1]);
+                            auto curr = kSpace.sKCoords(boundary_comp[i]);
+
+                            int dx = curr[0] - prev[0];
+                            int dy = curr[1] - prev[1];
+
+                            // Handle valid moves
+                            if (dx == 1 && dy == 0)
+                                ss << "0"; // East
+                            else if (dx == 0 && dy == 1)
+                                ss << "1"; // North
+                            else if (dx == -1 && dy == 0)
+                                ss << "2"; // West
+                            else if (dx == 0 && dy == -1)
+                                ss << "3"; // South
+                            else
+                            {
+                                // Handle invalid moves by breaking them into smaller steps
+                                while (dx != 0 || dy != 0)
+                                {
+                                    if (dx > 0)
+                                    {
+                                        ss << "0"; // East
+                                        dx -= 1;
+                                    }
+                                    else if (dx < 0)
+                                    {
+                                        ss << "2"; // West
+                                        dx += 1;
+                                    }
+                                    if (dy > 0)
+                                    {
+                                        ss << "1"; // North
+                                        dy -= 1;
+                                    }
+                                    else if (dy < 0)
+                                    {
+                                        ss << "3"; // South
+                                        dy += 1;
+                                    }
+                                }
+                            }
+                        }
+
+                        // Close the chain
+                        auto endpoint = computeEndpoint(kSpace.sKCoords(boundary_comp[0])[0], kSpace.sKCoords(boundary_comp[0])[1], ss.str());
+                        int deltaX = kSpace.sKCoords(boundary_comp[0])[0] - endpoint.first;
+                        int deltaY = kSpace.sKCoords(boundary_comp[0])[1] - endpoint.second;
+                        std::string closureChain = generateClosureChain(deltaX, deltaY);
+                        ss << closureChain;
+                        ss << "\n"; // Ensure the chain ends with a newline
+
+                        // Construct the FreemanChain object
+                        typedef FreemanChain<int> Contour4;
+                        Contour4 theContour(ss);
+
+                        // Extract ordered list of polygon vertices from the Freeman chain
+                        std::vector<Point> polygonVertices;
+                        for (auto it = theContour.begin(); it != theContour.end(); ++it)
+                        {
+                            polygonVertices.push_back(*it);
+                        }
+
+                        // Compute polygon area using Shoelace formula
+                        double area_polygon_val = computePolygonArea(polygonVertices);
+
+                        areas_polygon.push_back(area_polygon_val);
+                    }
+                    catch (const std::exception &e)
+                    {
+                        std::cerr << "Area calculation failed for a component: " << e.what() << std::endl;
+                        continue;
+                    }
+                }
+                else
+                {
+                    std::cerr << "Boundary is empty for a component. Skipping area calculation." << std::endl;
+                    continue;
+                }
+            }
+
+            // Compute statistics for areas_2cells
+            if (!areas_2cells.empty())
+            {
+                double sum_2cells = std::accumulate(areas_2cells.begin(), areas_2cells.end(), 0.0);
+                double avg_2cells = sum_2cells / areas_2cells.size();
+                double median_2cells = computeMedian(areas_2cells);
+                double min_2cells = *std::min_element(areas_2cells.begin(), areas_2cells.end());
+                double max_2cells = *std::max_element(areas_2cells.begin(), areas_2cells.end());
+
+                std::cout << "Area statistics (Number of 2-cells):" << std::endl;
+                std::cout << "Average: " << avg_2cells << std::endl;
+                std::cout << "Median: " << median_2cells << std::endl;
+                std::cout << "Minimum: " << min_2cells << std::endl;
+                std::cout << "Maximum: " << max_2cells << std::endl;
+            }
+
+            // Compute statistics for areas_polygon
+            if (!areas_polygon.empty())
+            {
+                double sum_polygon = std::accumulate(areas_polygon.begin(), areas_polygon.end(), 0.0);
+                double avg_polygon = sum_polygon / areas_polygon.size();
+                double median_polygon = computeMedian(areas_polygon);
+                double min_polygon = *std::min_element(areas_polygon.begin(), areas_polygon.end());
+                double max_polygon = *std::max_element(areas_polygon.begin(), areas_polygon.end());
+
+                std::cout << "Area statistics (Polygon Area):" << std::endl;
+                std::cout << "Average: " << avg_polygon << std::endl;
+                std::cout << "Median: " << median_polygon << std::endl;
+                std::cout << "Minimum: " << min_polygon << std::endl;
+                std::cout << "Maximum: " << max_polygon << std::endl;
+            }
+
+            std::cout << "=============================" << std::endl;
+
         }
         else
         {
