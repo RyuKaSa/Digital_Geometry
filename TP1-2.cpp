@@ -46,7 +46,7 @@ std::pair<int, int> computeEndpoint(int startX, int startY, const std::string &c
         if (!isdigit(c))
             continue; // Ignore non-digit characters
         int direction = c - '0';
-        if (direction < 0 || direction >= directionOffsets.size())
+        if (direction < 0 || direction >= (int)directionOffsets.size())
         {
             // std::cerr << "Invalid direction in chain code: " << direction << std::endl;
             continue;
@@ -58,9 +58,38 @@ std::pair<int, int> computeEndpoint(int startX, int startY, const std::string &c
 }
 
 // Function to generate chain code to close the contour (simple approach)
+// Updated to handle diagonal offsets by breaking them into horizontal and vertical steps.
 std::string generateClosureChain(int deltaX, int deltaY)
 {
     std::string closureChain = "";
+
+    // Handle diagonals by breaking them down into horizontal + vertical moves
+    while (deltaX != 0 && deltaY != 0)
+    {
+        if (deltaX > 0)
+        {
+            closureChain += "0"; // East
+            deltaX -= 1;
+        }
+        else if (deltaX < 0)
+        {
+            closureChain += "2"; // West
+            deltaX += 1;
+        }
+
+        if (deltaY > 0)
+        {
+            closureChain += "1"; // North
+            deltaY -= 1;
+        }
+        else if (deltaY < 0)
+        {
+            closureChain += "3"; // South
+            deltaY += 1;
+        }
+    }
+
+    // Now handle purely horizontal or vertical moves
     while (deltaX != 0 || deltaY != 0)
     {
         if (deltaX > 0 && deltaY == 0)
@@ -85,11 +114,13 @@ std::string generateClosureChain(int deltaX, int deltaY)
         }
         else
         {
-            // For 4-connected, diagonal moves should not occur
+            // For 4-connected, diagonal moves should not occur originally
             // std::cerr << "Cannot close chain with diagonal moves: deltaX = " << deltaX << ", deltaY = " << deltaY << std::endl;
-            break;
+            // Previously we had break, but now we handle diagonals above.
+            // No need to break here as diagonals are handled.
         }
     }
+
     return closureChain;
 }
 
@@ -306,7 +337,6 @@ int main(int argc, char **argv)
             // STEP 4: POLYGONIZE DIGITAL OBJECT BOUNDARY
             // ============================
 
-            // Type definitions
             typedef FreemanChain<int> Contour4;
             typedef ArithmeticalDSSComputer<Contour4::ConstIterator, int, 4> DSS4;
             typedef GreedySegmentation<DSS4> Decomposition4;
@@ -315,7 +345,6 @@ int main(int argc, char **argv)
             {
                 try
                 {
-                    // Generate Freeman chain code manually
                     std::stringstream ss;
                     ss << kSpace.sKCoords(boundary[0])[0] << " " << kSpace.sKCoords(boundary[0])[1] << " "; // Starting point
 
@@ -365,7 +394,6 @@ int main(int argc, char **argv)
                         }
                     }
 
-                    // Close the chain
                     auto endpoint = computeEndpoint(kSpace.sKCoords(boundary[0])[0], kSpace.sKCoords(boundary[0])[1], ss.str());
                     int deltaX = kSpace.sKCoords(boundary[0])[0] - endpoint.first;
                     int deltaY = kSpace.sKCoords(boundary[0])[1] - endpoint.second;
@@ -373,10 +401,7 @@ int main(int argc, char **argv)
                     ss << closureChain;
                     ss << "\n"; // Ensure the chain ends with a newline
 
-                    // Construct the FreemanChain object
                     Contour4 theContour(ss);
-
-                    // **Calculate Average Position and Max Size**
 
                     double sumX = 0.0, sumY = 0.0;
                     int count = 0;
@@ -385,7 +410,6 @@ int main(int argc, char **argv)
                     int minY = std::numeric_limits<int>::max();
                     int maxY = std::numeric_limits<int>::min();
 
-                    // Iterate through all points in the Freeman chain
                     for (auto it = theContour.begin(); it != theContour.end(); ++it)
                     {
                         Point p = *it;
@@ -393,47 +417,32 @@ int main(int argc, char **argv)
                         sumY += p[1];
                         count++;
 
-                        if (p[0] < minX)
-                            minX = p[0];
-                        if (p[0] > maxX)
-                            maxX = p[0];
-                        if (p[1] < minY)
-                            minY = p[1];
-                        if (p[1] > maxY)
-                            maxY = p[1];
+                        if (p[0] < minX) minX = p[0];
+                        if (p[0] > maxX) maxX = p[0];
+                        if (p[1] < minY) minY = p[1];
+                        if (p[1] > maxY) maxY = p[1];
                     }
 
-                    // Calculate average positions
                     double avgX = sumX / count;
                     double avgY = sumY / count;
 
-                    // Calculate width and height
                     int width = maxX - minX;
                     int height = maxY - minY;
 
-                    // Define padding to ensure the Freeman chain isn't touching the borders
                     int padding = 10; // Adjust as needed
 
-                    // Define the new domain based on the calculations
                     Point p1(minX - padding, minY - padding);
                     Point p2(maxX + padding, maxY + padding);
                     Domain domain(p1, p2);
 
-                    // Segmentation
                     Decomposition4 theDecomposition(theContour.begin(), theContour.end(), DSS4());
 
-                    // Draw the domain and the contour
                     Board2D aBoard;
                     aBoard << SetMode(domain.className(), "Grid")
                            << domain
                            << SetMode("PointVector", "Grid");
 
-                    // Draw each segment
-                    string styleName = "";
-                    for (Decomposition4::SegmentComputerIterator
-                             itSeg = theDecomposition.begin(),
-                             itEndSeg = theDecomposition.end();
-                         itSeg != itEndSeg; ++itSeg)
+                    for (auto itSeg = theDecomposition.begin(); itSeg != theDecomposition.end(); ++itSeg)
                     {
                         aBoard << SetMode("ArithmeticalDSS", "Points")
                                << itSeg->primitive();
@@ -443,7 +452,6 @@ int main(int argc, char **argv)
                                << itSeg->primitive();
                     }
 
-                    // Save the outputs
                     std::string svgFileName = std::filesystem::path(fileName).stem().string() + "_greedy-dss-decomposition.svg";
                     aBoard.saveSVG(("resources/" + svgFileName).c_str());
                     std::cout << "Saved greedy DSS decomposition to: " << svgFileName << std::endl;
@@ -466,19 +474,19 @@ int main(int argc, char **argv)
 
             std::vector<double> areas_2cells;
             std::vector<double> areas_polygon;
-
-            // Step 6: Perimeter calculations
             std::vector<double> perimeters_boundary;
             std::vector<double> perimeters_polygon;
 
+            // STEP 7: Circularity
+            // Circularity = (4 * π * Area) / (Perimeter^2)
+            std::vector<double> circularities;
+
             for (const auto &comp : finalComponents)
             {
-                // Compute area as number of 2-cells
                 double area_2cells = static_cast<double>(comp.pointSet().size());
                 areas_2cells.push_back(area_2cells);
 
-                // Extract boundary for the component
-                SurfelAdjacency<2> adjacency(false); // Use 4-connected adjacency
+                SurfelAdjacency<2> adjacency(false); // 4-connected
                 SCell bel = Surfaces<KSpace>::findABel(kSpace, comp.pointSet(), 10000);
 
                 if (bel == typename KSpace::SCell())
@@ -490,7 +498,6 @@ int main(int argc, char **argv)
                 std::vector<SCell> boundary_comp;
                 Surfaces<KSpace>::track2DBoundary(boundary_comp, kSpace, adjacency, comp.pointSet(), bel);
 
-                // Step 6: Perimeter as number of 1-cells
                 double perimeter_boundary_val = static_cast<double>(boundary_comp.size());
                 perimeters_boundary.push_back(perimeter_boundary_val);
 
@@ -498,9 +505,8 @@ int main(int argc, char **argv)
                 {
                     try
                     {
-                        // Generate Freeman chain code manually
                         std::stringstream ss;
-                        ss << kSpace.sKCoords(boundary_comp[0])[0] << " " << kSpace.sKCoords(boundary_comp[0])[1] << " "; // Starting point
+                        ss << kSpace.sKCoords(boundary_comp[0])[0] << " " << kSpace.sKCoords(boundary_comp[0])[1] << " "; // start
 
                         for (size_t i = 1; i < boundary_comp.size(); ++i)
                         {
@@ -510,68 +516,41 @@ int main(int argc, char **argv)
                             int dx = curr[0] - prev[0];
                             int dy = curr[1] - prev[1];
 
-                            // Handle valid moves
-                            if (dx == 1 && dy == 0)
-                                ss << "0"; // East
-                            else if (dx == 0 && dy == 1)
-                                ss << "1"; // North
-                            else if (dx == -1 && dy == 0)
-                                ss << "2"; // West
-                            else if (dx == 0 && dy == -1)
-                                ss << "3"; // South
+                            if (dx == 1 && dy == 0) ss << "0";
+                            else if (dx == 0 && dy == 1) ss << "1";
+                            else if (dx == -1 && dy == 0) ss << "2";
+                            else if (dx == 0 && dy == -1) ss << "3";
                             else
                             {
-                                // Handle invalid moves by breaking them into smaller steps
                                 while (dx != 0 || dy != 0)
                                 {
-                                    if (dx > 0)
-                                    {
-                                        ss << "0"; // East
-                                        dx -= 1;
-                                    }
-                                    else if (dx < 0)
-                                    {
-                                        ss << "2"; // West
-                                        dx += 1;
-                                    }
-                                    if (dy > 0)
-                                    {
-                                        ss << "1"; // North
-                                        dy -= 1;
-                                    }
-                                    else if (dy < 0)
-                                    {
-                                        ss << "3"; // South
-                                        dy += 1;
-                                    }
+                                    if (dx > 0) { ss << "0"; dx -= 1; }
+                                    else if (dx < 0) { ss << "2"; dx += 1; }
+                                    if (dy > 0) { ss << "1"; dy -= 1; }
+                                    else if (dy < 0) { ss << "3"; dy += 1; }
                                 }
                             }
                         }
 
-                        // Close the chain
                         auto endpoint = computeEndpoint(kSpace.sKCoords(boundary_comp[0])[0], kSpace.sKCoords(boundary_comp[0])[1], ss.str());
                         int deltaX = kSpace.sKCoords(boundary_comp[0])[0] - endpoint.first;
                         int deltaY = kSpace.sKCoords(boundary_comp[0])[1] - endpoint.second;
                         std::string closureChain = generateClosureChain(deltaX, deltaY);
                         ss << closureChain;
-                        ss << "\n"; // Ensure the chain ends with a newline
+                        ss << "\n";
 
-                        // Construct the FreemanChain object
                         typedef FreemanChain<int> Contour4;
                         Contour4 theContour(ss);
 
-                        // Extract ordered list of polygon vertices from the Freeman chain
                         std::vector<Point> polygonVertices;
                         for (auto it = theContour.begin(); it != theContour.end(); ++it)
                         {
                             polygonVertices.push_back(*it);
                         }
 
-                        // Compute polygon area using Shoelace formula
                         double area_polygon_val = computePolygonArea(polygonVertices);
                         areas_polygon.push_back(area_polygon_val);
 
-                        // Step 6: Compute perimeter of the polygon
                         double perimeter_polygon_val = 0.0;
                         size_t numVertices = polygonVertices.size();
                         for (size_t i = 0; i < numVertices; ++i)
@@ -583,6 +562,16 @@ int main(int argc, char **argv)
                             perimeter_polygon_val += std::sqrt(dx * dx + dy * dy);
                         }
                         perimeters_polygon.push_back(perimeter_polygon_val);
+
+                        // STEP 7: Calculate circularity
+                        // Circularity = (4 * π * Area) / (Perimeter^2)
+                        double circularity = 0.0;
+                        if (perimeter_polygon_val > 0.0)
+                        {
+                            circularity = (4.0 * M_PI * area_polygon_val) / (perimeter_polygon_val * perimeter_polygon_val);
+                        }
+                        circularities.push_back(circularity);
+
                     }
                     catch (const std::exception &e)
                     {
@@ -665,7 +654,23 @@ int main(int argc, char **argv)
                 std::cout << "Maximum: " << max_perimeter_polygon << std::endl;
             }
 
-            // Store perimeters for analysis
+            // STEP 7: Print circularity stats
+            if (!circularities.empty())
+            {
+                double sum_circ = std::accumulate(circularities.begin(), circularities.end(), 0.0);
+                double avg_circ = sum_circ / circularities.size();
+                double median_circ = computeMedian(circularities);
+                double min_circ = *std::min_element(circularities.begin(), circularities.end());
+                double max_circ = *std::max_element(circularities.begin(), circularities.end());
+
+                std::cout << "-----------------------------" << std::endl;
+                std::cout << "Circularity statistics:" << std::endl;
+                std::cout << "Average: " << avg_circ << std::endl;
+                std::cout << "Median: " << median_circ << std::endl;
+                std::cout << "Minimum: " << min_circ << std::endl;
+                std::cout << "Maximum: " << max_circ << std::endl;
+            }
+
             perimeters_polygon_by_file[fileName] = perimeters_polygon;
 
             std::cout << "=============================" << std::endl;
@@ -677,7 +682,6 @@ int main(int argc, char **argv)
         }
     }
 
-    // Call the function to analyze perimeter distributions across files
     analyzePerimeterDistributions(perimeters_polygon_by_file);
 
     std::cout << "\n"

@@ -203,6 +203,21 @@ todo
 
 # STEP 7 : PROPOSE AND CALCULATE CIRCULARITY
 
+### Conclusion on the Circularity Measure :
+
+The circularity measure we used, defined as :
+
+    ( 4𝜋*Area ) / ( Perimeter^2 )
+
+​
+ --inherently ranges from 0 to 1. A value closer to 1 indicates a shape that is more perfectly circular, because for a true circle this formula yields exactly 1. As shapes become more elongated or irregular, their perimeter increases more rapidly than their area, causing the circularity value to decrease towards 0.
+
+### Implications on Different Grain Shapes :
+
+Looking at the computed circularities, the Japonica grains have higher circularity values, suggesting they are more compact and closer to a rounded shape. The Camargue grains, with intermediate circularity, appear moderately elongated. The Basmati grains, showing the lowest circularities, are the most elongated and least circle-like. Thus, the circularity measure helps distinguish grain types by quantifying how closely their shapes resemble a circle—higher values correspond to more compact, rounded shapes and lower values correspond to more elongated, irregular ones.
+
+Thus we can to some reasonable extent, distinguish between the three types of rice grains based on their circularity values.
+
 # STEP 8 (OPTIONAL): FIND USEFUL MEASURES FOR THE GRAIN CLASSIFICATION
 
 # STEP 9 (OPTIONAL): CLASSIFICATION OF GRAINS

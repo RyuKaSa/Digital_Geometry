@@ -19064,10 +19064,12 @@
 <polygon fill="none" stroke="rgb(0,0,255)" stroke-width="0.353mm" style="stroke-linecap:butt;stroke-linejoin:miter"
           points="504.79,2779.04 487.34,2805.21 592,2874.99 609.45,2848.82" />
 <polyline fill="none" stroke="rgb(0,0,0)" stroke-width="0.706mm" style="stroke-linecap:butt;stroke-linejoin:miter"
-          points="609.45,2848.82 637.8,2848.82 666.14,2848.82" />
+          points="609.45,2848.82 637.8,2848.82 666.14,2848.82 694.49,2848.82 694.49,2877.17" />
 <circle cx="609.45" cy="2848.82" r="2.83" fill="rgb(0,0,0)" stroke="none" stroke-width="0" style="stroke-linecap:round;stroke-linejoin:round;" />
 <circle cx="637.8" cy="2848.82" r="2.83" fill="rgb(0,0,0)" stroke="none" stroke-width="0" style="stroke-linecap:round;stroke-linejoin:round;" />
 <circle cx="666.14" cy="2848.82" r="2.83" fill="rgb(0,0,0)" stroke="none" stroke-width="0" style="stroke-linecap:round;stroke-linejoin:round;" />
+<circle cx="694.49" cy="2848.82" r="2.83" fill="rgb(0,0,0)" stroke="none" stroke-width="0" style="stroke-linecap:round;stroke-linejoin:round;" />
+<circle cx="694.49" cy="2877.17" r="2.83" fill="rgb(0,0,0)" stroke="none" stroke-width="0" style="stroke-linecap:round;stroke-linejoin:round;" />
 <polygon fill="none" stroke="rgb(0,0,255)" stroke-width="0.353mm" style="stroke-linecap:butt;stroke-linejoin:miter"
-          points="609.45,2848.82 609.45,2848.82 666.14,2848.82 666.14,2848.82" />
+          points="617.95,2823.31 609.45,2848.82 694.49,2877.17 702.99,2851.65" />
 </svg>
