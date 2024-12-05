@@ -540,6 +540,7 @@ int main(int argc, char **argv)
                 double min_2cells = *std::min_element(areas_2cells.begin(), areas_2cells.end());
                 double max_2cells = *std::max_element(areas_2cells.begin(), areas_2cells.end());
 
+                std::cout << "-----------------------------" << std::endl;
                 std::cout << "Area statistics (Number of 2-cells):" << std::endl;
                 std::cout << "Average: " << avg_2cells << std::endl;
                 std::cout << "Median: " << median_2cells << std::endl;
@@ -556,6 +557,7 @@ int main(int argc, char **argv)
                 double min_polygon = *std::min_element(areas_polygon.begin(), areas_polygon.end());
                 double max_polygon = *std::max_element(areas_polygon.begin(), areas_polygon.end());
 
+                std::cout << "-----------------------------" << std::endl;
                 std::cout << "Area statistics (Polygon Area):" << std::endl;
                 std::cout << "Average: " << avg_polygon << std::endl;
                 std::cout << "Median: " << median_polygon << std::endl;
@@ -573,5 +575,7 @@ int main(int argc, char **argv)
         }
     }
 
+    std::cout << "\n" << std::endl;
+    std::cout << "All files processed successfully." << std::endl;
     return 0;
 }
