@@ -9,8 +9,7 @@
 #include <DGtal/io/colormaps/ColorBrightnessColorMap.h>
 #include <DGtal/topology/SurfelAdjacency.h>
 #include <DGtal/topology/helpers/Surfaces.h>
-#include "DGtal/io/Color.h"
-#include "DGtal/geometry/curves/GreedySegmentation.h"
+#include <DGtal/geometry/curves/GreedySegmentation.h>
 
 #include <iostream>
 #include <vector>
@@ -20,6 +19,8 @@
 #include <limits>
 #include <algorithm> // For std::
 #include <numeric>
+#include <cmath>
+#include <map> // For std::map
 
 using namespace std;
 using namespace DGtal;
@@ -92,8 +93,6 @@ std::string generateClosureChain(int deltaX, int deltaY)
     return closureChain;
 }
 
-// === Added: Helper Functions ===
-
 // Function to compute polygon area using Shoelace formula
 double computePolygonArea(const std::vector<Point> &vertices)
 {
@@ -131,6 +130,51 @@ double computeMedian(std::vector<double> data)
     }
 }
 
+// Function to analyze perimeter distributions across files
+void analyzePerimeterDistributions(const std::map<std::string, std::vector<double>> &perimeters_polygon_by_file)
+{
+    std::cout << "\n=============================" << std::endl;
+    std::cout << "Analyzing perimeter distributions across files:" << std::endl;
+    for (const auto &entry : perimeters_polygon_by_file)
+    {
+        const std::string &fileName = entry.first;
+        const std::vector<double> &perimeters = entry.second;
+
+        if (!perimeters.empty())
+        {
+            double sum = std::accumulate(perimeters.begin(), perimeters.end(), 0.0);
+            double average = sum / perimeters.size();
+            double median = computeMedian(perimeters);
+            double minVal = *std::min_element(perimeters.begin(), perimeters.end());
+            double maxVal = *std::max_element(perimeters.begin(), perimeters.end());
+
+            // Compute standard deviation
+            double variance = 0.0;
+            for (double val : perimeters)
+            {
+                variance += (val - average) * (val - average);
+            }
+            variance /= perimeters.size();
+            double stddev = std::sqrt(variance);
+
+            std::cout << "-----------------------------" << std::endl;
+            std::cout << "File: " << fileName << std::endl;
+            std::cout << "Number of grains: " << perimeters.size() << std::endl;
+            std::cout << "Perimeter statistics (Polygon Perimeter):" << std::endl;
+            std::cout << "Average: " << average << std::endl;
+            std::cout << "Median: " << median << std::endl;
+            std::cout << "Minimum: " << minVal << std::endl;
+            std::cout << "Maximum: " << maxVal << std::endl;
+            std::cout << "Standard Deviation: " << stddev << std::endl;
+        }
+        else
+        {
+            std::cout << "No perimeters found for file: " << fileName << std::endl;
+        }
+    }
+    std::cout << "=============================" << std::endl;
+}
+
 int main(int argc, char **argv)
 {
     setlocale(LC_NUMERIC, "us_US"); // To prevent locale issues
@@ -141,6 +185,9 @@ int main(int argc, char **argv)
 
     std::vector<std::string> fileNames;
     std::string directoryPath = "resources/";
+
+    // Map to store perimeters per file
+    std::map<std::string, std::vector<double>> perimeters_polygon_by_file;
 
     // Iterate over all files in the directory for .pgm specifically
     for (const auto &entry : fs::directory_iterator(directoryPath))
@@ -400,7 +447,6 @@ int main(int argc, char **argv)
                     std::string svgFileName = std::filesystem::path(fileName).stem().string() + "_greedy-dss-decomposition.svg";
                     aBoard.saveSVG(("resources/" + svgFileName).c_str());
                     std::cout << "Saved greedy DSS decomposition to: " << svgFileName << std::endl;
-
                 }
                 catch (const std::exception &e)
                 {
@@ -415,11 +461,15 @@ int main(int argc, char **argv)
             }
 
             // ============================
-            // STEP 5: CALCULATE AREA FOR ALL COMPONENTS
+            // STEP 5: CALCULATE AREA AND PERIMETER FOR ALL COMPONENTS
             // ============================
 
             std::vector<double> areas_2cells;
             std::vector<double> areas_polygon;
+
+            // Step 6: Perimeter calculations
+            std::vector<double> perimeters_boundary;
+            std::vector<double> perimeters_polygon;
 
             for (const auto &comp : finalComponents)
             {
@@ -439,6 +489,10 @@ int main(int argc, char **argv)
 
                 std::vector<SCell> boundary_comp;
                 Surfaces<KSpace>::track2DBoundary(boundary_comp, kSpace, adjacency, comp.pointSet(), bel);
+
+                // Step 6: Perimeter as number of 1-cells
+                double perimeter_boundary_val = static_cast<double>(boundary_comp.size());
+                perimeters_boundary.push_back(perimeter_boundary_val);
 
                 if (!boundary_comp.empty())
                 {
@@ -515,18 +569,30 @@ int main(int argc, char **argv)
 
                         // Compute polygon area using Shoelace formula
                         double area_polygon_val = computePolygonArea(polygonVertices);
-
                         areas_polygon.push_back(area_polygon_val);
+
+                        // Step 6: Compute perimeter of the polygon
+                        double perimeter_polygon_val = 0.0;
+                        size_t numVertices = polygonVertices.size();
+                        for (size_t i = 0; i < numVertices; ++i)
+                        {
+                            const Point &current = polygonVertices[i];
+                            const Point &next = polygonVertices[(i + 1) % numVertices];
+                            double dx = next[0] - current[0];
+                            double dy = next[1] - current[1];
+                            perimeter_polygon_val += std::sqrt(dx * dx + dy * dy);
+                        }
+                        perimeters_polygon.push_back(perimeter_polygon_val);
                     }
                     catch (const std::exception &e)
                     {
-                        std::cerr << "Area calculation failed for a component: " << e.what() << std::endl;
+                        std::cerr << "Area or perimeter calculation failed for a component: " << e.what() << std::endl;
                         continue;
                     }
                 }
                 else
                 {
-                    std::cerr << "Boundary is empty for a component. Skipping area calculation." << std::endl;
+                    std::cerr << "Boundary is empty for a component. Skipping area and perimeter calculation." << std::endl;
                     continue;
                 }
             }
@@ -565,8 +631,44 @@ int main(int argc, char **argv)
                 std::cout << "Maximum: " << max_polygon << std::endl;
             }
 
-            std::cout << "=============================" << std::endl;
+            // Compute statistics for perimeters_boundary
+            if (!perimeters_boundary.empty())
+            {
+                double sum_perimeter_boundary = std::accumulate(perimeters_boundary.begin(), perimeters_boundary.end(), 0.0);
+                double avg_perimeter_boundary = sum_perimeter_boundary / perimeters_boundary.size();
+                double median_perimeter_boundary = computeMedian(perimeters_boundary);
+                double min_perimeter_boundary = *std::min_element(perimeters_boundary.begin(), perimeters_boundary.end());
+                double max_perimeter_boundary = *std::max_element(perimeters_boundary.begin(), perimeters_boundary.end());
 
+                std::cout << "-----------------------------" << std::endl;
+                std::cout << "Perimeter statistics (Number of 1-cells):" << std::endl;
+                std::cout << "Average: " << avg_perimeter_boundary << std::endl;
+                std::cout << "Median: " << median_perimeter_boundary << std::endl;
+                std::cout << "Minimum: " << min_perimeter_boundary << std::endl;
+                std::cout << "Maximum: " << max_perimeter_boundary << std::endl;
+            }
+
+            // Compute statistics for perimeters_polygon
+            if (!perimeters_polygon.empty())
+            {
+                double sum_perimeter_polygon = std::accumulate(perimeters_polygon.begin(), perimeters_polygon.end(), 0.0);
+                double avg_perimeter_polygon = sum_perimeter_polygon / perimeters_polygon.size();
+                double median_perimeter_polygon = computeMedian(perimeters_polygon);
+                double min_perimeter_polygon = *std::min_element(perimeters_polygon.begin(), perimeters_polygon.end());
+                double max_perimeter_polygon = *std::max_element(perimeters_polygon.begin(), perimeters_polygon.end());
+
+                std::cout << "-----------------------------" << std::endl;
+                std::cout << "Perimeter statistics (Polygon Perimeter):" << std::endl;
+                std::cout << "Average: " << avg_perimeter_polygon << std::endl;
+                std::cout << "Median: " << median_perimeter_polygon << std::endl;
+                std::cout << "Minimum: " << min_perimeter_polygon << std::endl;
+                std::cout << "Maximum: " << max_perimeter_polygon << std::endl;
+            }
+
+            // Store perimeters for analysis
+            perimeters_polygon_by_file[fileName] = perimeters_polygon;
+
+            std::cout << "=============================" << std::endl;
         }
         else
         {
@@ -575,7 +677,11 @@ int main(int argc, char **argv)
         }
     }
 
-    std::cout << "\n" << std::endl;
+    // Call the function to analyze perimeter distributions across files
+    analyzePerimeterDistributions(perimeters_polygon_by_file);
+
+    std::cout << "\n"
+              << std::endl;
     std::cout << "All files processed successfully." << std::endl;
     return 0;
 }

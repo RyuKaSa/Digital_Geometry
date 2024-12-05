@@ -44,5 +44,167 @@ For each connected component, we extract the inter-pixel boundary.
 ![Japanese rice grain 1 boundary](resources/Rice_japonais_seg_bin_boundary.svg)
  ^ SVG of the boundary of a single grain of Japanese rice.
 
+--------------------
+
 # STEP 4 : POLYGONIZE DIGITAL OBJECT BOUNDARY
 
+![Japanese rice grain 1 polygon](resources/Rice_japonais_seg_bin_greedy-dss-decomposition.svg)
+ ^ SVG of the polygon of a single grain of Japanese rice.
+
+--------------------
+
+# STEP 5 : CALCUALTE AREA
+
+### Rice Japonais :
+
+Area statistics (Number of 2-cells):
+
+ - Average: 2068.46
+ - Median: 2078
+ - Minimum: 1744
+ - Maximum: 2382
+
+Area statistics (Polygon Area):
+
+ - Average: 8272.46
+ - Median: 8322.25
+ - Minimum: 6957.5
+ - Maximum: 9486
+
+--------------------
+
+### Rice Camargue :
+
+Area statistics (Number of 2-cells):
+
+ - Average: 2693.56
+ - Median: 2829
+ - Minimum: 921
+ - Maximum: 3417
+
+Area statistics (Polygon Area):
+
+ - Average: 10771.7
+ - Median: 11292.8
+ - Minimum: 3674
+ - Maximum: 13708
+
+--------------------
+
+### Rice Basmati :
+
+Area statistics (Number of 2-cells):
+
+ - Average: 2249.97
+ - Median: 2321.5
+ - Minimum: 801
+ - Maximum: 3897
+
+Area statistics (Polygon Area):
+
+ - Average: 8998.58
+ - Median: 9314.5
+ - Minimum: 3181
+ - Maximum: 15559.5
+
+--------------------
+
+## Observations
+
+todo
+
+# STEP 6 : CALCULATE PERIMETER
+
+### Rice Japonais :
+
+Perimeter Statistics (Polygon Perimeter):
+
+ - Average: 441.023
+ - Median: 439.707
+ - Minimum: 391.414
+ - Maximum: 483.414
+ - Standard Deviation: 17.5226
+
+Perimeter Statistics (1-Cells Perimeter):
+
+ - Average: 220.362
+ - Median: 220
+ - Minimum: 196
+ - Maximum: 242
+
+--------------------
+
+### Rice Camargue :
+
+Perimeter Statistics (Polygon Perimeter):
+
+ - Average: 544.549
+ - Median: 559.414
+ - Minimum: 285.414
+ - Maximum: 687.414
+ - Standard Deviation: 69.4478
+
+Perimeter Statistics (1-Cells Perimeter):
+
+ - Average: 272.107
+ - Median: 279
+ - Minimum: 142
+ - Maximum: 344
+
+--------------------
+
+### Rice Basmati :
+
+ 
+Perimeter Statistics (Polygon Perimeter):
+
+ - Average: 583.942
+ - Median: 591.707
+ - Minimum: 304
+ - Maximum: 775.414
+ - Standard Deviation: 82.1078
+
+Perimeter Statistics (1-Cells Perimeter):
+
+ - Average: 291.952
+ - Median: 296
+ - Minimum: 152
+ - Maximum: 388
+
+--------------------
+
+## Observations
+
+### Distinct Average Perimeters:
+
+Rice Japonica has the smallest average perimeter.
+Rice Camargue and Basmati have larger average perimeters.
+
+### Variability:
+
+Rice Japonica shows low variability (SD ≈ 17.5), indicating uniform grain sizes.
+Rice Camargue and Basmati exhibit higher variability (SD ≈ 69.4 and 82.1), suggesting a wider range of sizes.
+
+### Overlap in Perimeter Ranges:
+
+Perimeter ranges for Camargue and Basmati overlap significantly.
+Japonica's perimeter range is distinct from the others.
+
+### Implications:
+
+Perimeter can be a useful feature for distinguishing Japanese rice from the other two types, though Camargue and Basmati may be harder to differentiate based on this feature alone.
+
+--------------------
+
+## Multigrid take
+
+todo
+
+
+# STEP 7 : PROPOSE AND CALCULATE CIRCULARITY
+
+# STEP 8 (OPTIONAL): FIND USEFUL MEASURES FOR THE GRAIN CLASSIFICATION
+
+# STEP 9 (OPTIONAL): CLASSIFICATION OF GRAINS
+
+# STEP 10 (OPTIONAL): IMPROVE GRAIN SEGMENTATION
