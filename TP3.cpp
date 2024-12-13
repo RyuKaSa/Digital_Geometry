@@ -26,7 +26,7 @@ int main(int argc, char** argv)
     std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
 
     // read a 3D image
-    Image3D image = VolReader<Image3D>::importVol("3D/Torus_Knot-512.vol");
+    Image3D image = VolReader<Image3D>::importVol("3D/Torus_Knot-64.vol");
 
     // make the foreground and background digital sets from the image
     Z3i::DigitalSet set_foreground ( image.domain() );                                 // Create a digital set of proper size
