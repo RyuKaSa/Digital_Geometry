@@ -1,6 +1,17 @@
-to run the main.cpp code : 
+
 
 ```
 mkdir build ; cd build ; cmake .. ; make ;
-cd .. ; ./build/main
+```
+
+to run the TP 1-2 code : 
+
+```
+cd .. ; ./build/TP1-2
+```
+
+to run the TP 3 code : 
+
+```
+cd .. ; ./build/TP3
 ```
