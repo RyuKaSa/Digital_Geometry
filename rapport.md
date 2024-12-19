@@ -30,7 +30,7 @@ We can remove the grains that are not fully visible, as they are not fully segme
 
 We can visualize using SVG, the grains of rice that are fully visible.
 
-![Japanese rice grain 1](resources/Rice_japonais.tif)
+![Japanese rice grain 1](resources/Rice_japonais.png)
  ^ File of the Japanese rice.
 
 --------------------
