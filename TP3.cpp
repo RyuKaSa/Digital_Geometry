@@ -26,7 +26,11 @@ int main(int argc, char** argv)
     std::cout << "Current working directory: " << std::filesystem::current_path() << std::endl;
 
     // read a 3D image
-    Image3D image = VolReader<Image3D>::importVol("3D/Torus_Knot-64.vol");
+    Image3D image = VolReader<Image3D>::importVol("3D/fertility-64.vol");
+
+    std::cout << "Lower Bound: " << image.domain().lowerBound() << std::endl;
+    std::cout << "Upper Bound: " << image.domain().upperBound() << std::endl;
+
 
     // make the foreground and background digital sets from the image
     Z3i::DigitalSet set_foreground ( image.domain() );                                 // Create a digital set of proper size
@@ -61,6 +65,27 @@ int main(int argc, char** argv)
     int euler = complex.getCells(0).size() - complex.getCells(1).size() + complex.getCells(2).size() - complex.getCells(3).size();
     cout << "euler : " << euler << endl;
 
+    // Step 4: Calculate the number of tunnels
+
+    // Foreground connected components (C) with 26-connectivity
+    std::vector<ObjectType26_6> components_foreground;
+    std::back_insert_iterator<std::vector<ObjectType26_6>> inserter_foreground(components_foreground);
+    unsigned int C = object_foreground.writeComponents(inserter_foreground);
+    std::cout << "Number of connected components in foreground (C): " << C << std::endl;
+
+    // Background connected components (H) with 26-connectivity
+    std::vector<ObjectType6_26> components_background;
+    std::back_insert_iterator<std::vector<ObjectType6_26>> inserter_background(components_background);
+    unsigned int H = object_background.writeComponents(inserter_background);
+    std::cout << "Number of cavities in background (H): " << H << std::endl;
+
+    // Euler characteristic (already calculated)
+    int euler_characteristic = euler; // From Step 3
+    std::cout << "Euler characteristic (χ): " << euler_characteristic << std::endl;
+
+    // Calculate the number of tunnels (T)
+    int T = C + H - euler_characteristic;
+    std::cout << "Number of tunnels (T): " << T << std::endl;
 
     // 3D viewer
     QApplication application(argc,argv);

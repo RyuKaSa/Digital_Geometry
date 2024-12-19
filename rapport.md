@@ -4,9 +4,9 @@
 
 # STEP 1 : DOWNLOAD AND OBSERVE SEGMENTED IMAGES
 
- - (A) Basmati rice (Original: Rice_basmati.pgm; Segmented: Rice_basmati_seg_bin.pgm),
- - (B) Camargue rice (Original: Rice_camargue.pgm; Segmented: Rice_camargue_seg_bin.pgm),
- - (C) Japanese rice (Original: Rice_japanese.pgm; Segmented: Rice_japanese_seg_bin.pgm)
+ - (A) **Basmati rice** (Original: Rice_basmati.pgm; Segmented: Rice_basmati_seg_bin.pgm),
+ - (B) **Camargue rice** (Original: Rice_camargue.pgm; Segmented: Rice_camargue_seg_bin.pgm),
+ - (C) **Japanese rice** (Original: Rice_japanese.pgm; Segmented: Rice_japanese_seg_bin.pgm)
 
 The rice (A) is Basmati rice, the general shape of the rice grain is that of a long slender cylinder, of ratio 1/5 width to height, in average.
 
@@ -57,14 +57,14 @@ For each connected component, we extract the inter-pixel boundary.
 
 ### Rice Japonais :
 
-Area statistics (Number of 2-cells):
+**Area statistics** (Number of 2-cells):
 
  - Average: 2068.46
  - Median: 2078
  - Minimum: 1744
  - Maximum: 2382
 
-Area statistics (Polygon Area):
+**Area statistics** (Polygon Area):
 
  - Average: 8272.46
  - Median: 8322.25
@@ -75,14 +75,14 @@ Area statistics (Polygon Area):
 
 ### Rice Camargue :
 
-Area statistics (Number of 2-cells):
+**Area statistics** (Number of 2-cells):
 
  - Average: 2693.56
  - Median: 2829
  - Minimum: 921
  - Maximum: 3417
 
-Area statistics (Polygon Area):
+**Area statistics** (Polygon Area):
 
  - Average: 10771.7
  - Median: 11292.8
@@ -93,14 +93,14 @@ Area statistics (Polygon Area):
 
 ### Rice Basmati :
 
-Area statistics (Number of 2-cells):
+**Area statistics** (Number of 2-cells):
 
  - Average: 2249.97
  - Median: 2321.5
  - Minimum: 801
  - Maximum: 3897
 
-Area statistics (Polygon Area):
+**Area statistics** (Polygon Area):
 
  - Average: 8998.58
  - Median: 9314.5
@@ -111,13 +111,13 @@ Area statistics (Polygon Area):
 
 ## Observations
 
-todo
+Although the means on both the Basmati and the Japanese rice are similar, their min and maxes vary wildly, and also encompase the Camargue, which has a higher mean. This suggests that the area of the grains is not a good indicator of the type of rice. We would also need to pay attention to the distance between the Camera and the grains, as the area of the grains would be affected by the distance, and the angle of the camera, and the zoom level, they would need to be standardized.
 
 # STEP 6 : CALCULATE PERIMETER
 
 ### Rice Japonais :
 
-Perimeter Statistics (Polygon Perimeter):
+**Perimeter Statistics** (Polygon Perimeter):
 
  - Average: 441.023
  - Median: 439.707
@@ -125,7 +125,7 @@ Perimeter Statistics (Polygon Perimeter):
  - Maximum: 483.414
  - Standard Deviation: 17.5226
 
-Perimeter Statistics (1-Cells Perimeter):
+**Perimeter Statistics** (1-Cells Perimeter):
 
  - Average: 220.362
  - Median: 220
@@ -136,7 +136,7 @@ Perimeter Statistics (1-Cells Perimeter):
 
 ### Rice Camargue :
 
-Perimeter Statistics (Polygon Perimeter):
+**Perimeter Statistics** (Polygon Perimeter):
 
  - Average: 544.549
  - Median: 559.414
@@ -144,7 +144,7 @@ Perimeter Statistics (Polygon Perimeter):
  - Maximum: 687.414
  - Standard Deviation: 69.4478
 
-Perimeter Statistics (1-Cells Perimeter):
+**Perimeter Statistics** (1-Cells Perimeter):
 
  - Average: 272.107
  - Median: 279
@@ -156,7 +156,7 @@ Perimeter Statistics (1-Cells Perimeter):
 ### Rice Basmati :
 
  
-Perimeter Statistics (Polygon Perimeter):
+**Perimeter Statistics** (Polygon Perimeter):
 
  - Average: 583.942
  - Median: 591.707
@@ -164,7 +164,7 @@ Perimeter Statistics (Polygon Perimeter):
  - Maximum: 775.414
  - Standard Deviation: 82.1078
 
-Perimeter Statistics (1-Cells Perimeter):
+**Perimeter Statistics** (1-Cells Perimeter):
 
  - Average: 291.952
  - Median: 296
@@ -198,8 +198,27 @@ Perimeter can be a useful feature for distinguishing Japanese rice from the othe
 
 ## Multigrid take
 
-todo
+### Theory
 
+Multigrid convergence means that perimeter measurements should stay consistent as image resolution improves, since higher resolution captures boundaries more accurately. At lower resolution, boundaries can appear jagged, causing errors.
+
+### Observed Results:
+
+#### Rice Japonais:
+- **Low variability** (SD ≈ 17.5).
+- **Conclusion**: Likely follows multigrid convergence due to stable and uniform measurements.
+
+#### Rice Camargue:
+- **Moderate variability** (SD ≈ 69.4).
+- **Conclusion**: Somewhat weaker convergence due to irregular shapes.
+
+#### Rice Basmati:
+- **High variability** (SD ≈ 82.1).
+- **Conclusion**: Likely does not follow multigrid convergence due to elongated and irregular shapes.
+
+Japonais rice aligns best with multigrid convergence, while Camargue and Basmati are less consistent. Testing at different resolutions would confirm this further.
+
+--------------------
 
 # STEP 7 : PROPOSE AND CALCULATE CIRCULARITY
 
@@ -207,13 +226,35 @@ todo
 
 The circularity measure we used, defined as :
 
-    ( 4𝜋*Area ) / ( Perimeter^2 )
+$$ ( 4𝜋*Area ) / ( Perimeter^2 ) $$
 
  --inherently ranges from 0 to 1. A value closer to 1 indicates a shape that is more perfectly circular, because for a true circle this formula yields exactly 1. As shapes become more elongated or irregular, their perimeter increases more rapidly than their area, causing the circularity value to decrease towards 0.
 
 --------------------
 
 ### Implications on Different Grain Shapes :
+
+
+#### Rice Japonais Circularity statistics :
+
+ - Average: 0.527097
+ - Median: 0.528177
+ - Minimum: 0.475761
+ - Maximum: 0.60165
+
+#### Rice Camargue Circularity statistics :
+
+ - Average: 0.450732
+ - Median: 0.445229
+ - Minimum: 0.327991
+ - Maximum: 0.575507
+
+#### Rice Basmati Circularity statistics :
+
+ - Average: 0.332809
+ - Median: 0.325142
+ - Minimum: 0.248882
+ - Maximum: 0.499553
 
 Looking at the computed circularities, the Japonais grains have higher circularity values, suggesting they are more compact and closer to a rounded shape. The Camargue grains, with intermediate circularity, appear moderately elongated. The Basmati grains, showing the lowest circularities, are the most elongated and least circle-like. Thus, the circularity measure helps distinguish grain types by quantifying how closely their shapes resemble a circle—higher values correspond to more compact, rounded shapes and lower values correspond to more elongated, irregular ones.
 
@@ -223,14 +264,19 @@ Thus we can to some reasonable extent, distinguish between the three types of ri
 
 # STEP 8 (OPTIONAL): FIND USEFUL MEASURES FOR THE GRAIN CLASSIFICATION
 
+.not implemented
+
 # STEP 9 (OPTIONAL): CLASSIFICATION OF GRAINS
+
+.not implemented
 
 # STEP 10 (OPTIONAL): IMPROVE GRAIN SEGMENTATION
 
+.not implemented
 
 # Current console output of the program
 
-```
+```plaintext
 *****************************
 Number of files found: 3
 *****************************
