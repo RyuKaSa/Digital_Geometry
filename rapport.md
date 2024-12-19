@@ -28,7 +28,7 @@ We can remove the grains that are not fully visible, as they are not fully segme
 2. 112 grains of Camargue rice
 3. 138 grains of Japanese rice
 
-We can visualize using SVG, the grains of rice that are fully visible.
+We can see the grains of rice that are fully visible, and we can clearly see on the edges of the images that there argrains to remove for the rest of the lab work, to not bias towards lower values for the perimeter and areas.
 
 ![Japanese rice grain 1](resources/Rice_japonais.png)
  ^ File of the Japanese rice.
